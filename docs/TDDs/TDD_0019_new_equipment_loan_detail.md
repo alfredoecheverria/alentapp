@@ -42,8 +42,8 @@ Se definira la entidad `Equipment_Loan` con las siguientes propiedades:
 
 ### Contrato de API (@alentapp/shared)
 [Definición de endpoints y tipos compartidos.]
-- Endpoint: `POST /api/v1/detail-equipment-loans`
-- Request Body (CreateDetailEquipmentLoanRequest):
+- Endpoint: `POST /api/v1/equipment-loan-details`
+- Request Body (CreateEquipmentLoanDetailRequest):
 ```ts
 {
     title: string; //requerido
@@ -55,10 +55,10 @@ Se definira la entidad `Equipment_Loan` con las siguientes propiedades:
 
 ### Componentes de Arquitectura Hexagonal
 
-1. Puerto: DetailEquipmentLoanRepository (Interface en el Dominio).
-2. Caso de Uso: CreateDetailEquipmentLoan (Logica que verifica si el EquipmentLoan existe antes de llamar al repositorio)
+1. Puerto: EquipmentLoanDetailRepository (Interface en el Dominio).
+2. Caso de Uso: CreateEquipmentLoanDetail (Logica que verifica si el EquipmentLoan existe antes de llamar al repositorio)
 3. Adaptador de Salida: DB persistence adapter (implementacion real en BD)
-4. Adaptador de Entrada: DetailEquipmentLoanController (Ruta HTTP)
+4. Adaptador de Entrada: EquipmentLoanDetailController (Ruta HTTP)
 
 ## Casos de Borde y Errores
 | Escenario                   | Resultado Esperado                            | Código HTTP               |
@@ -69,7 +69,7 @@ Se definira la entidad `Equipment_Loan` con las siguientes propiedades:
 | Error en la Base de Datos | Mensaje: "Error al procesar la operacion, intente mas tarde" | 500 Internal Server Error |
 
 ## Plan de Implementación
-1. Definir esquema de persistencia y correr migracion: crear la tabla Detail_Equipment_Loan con sus campos correspondientes y su relacion a la tabla Equipment_Loan.
+1. Definir esquema de persistencia y correr migracion: crear la tabla Equipment_Loan_Detail con sus campos correspondientes y su relacion a la tabla Equipment_Loan.
 2. Crear tipos en shared y puerto en el Dominio.
 3. Implementar el repositorio y el caso de uso: Implementar logica para verificar que el prestamo de equipamiento existe.
 4. Crear formulario en React y conectar con el endpoint del backend.
