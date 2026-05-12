@@ -2,7 +2,7 @@
 id: 0019
 estado: Propuesto
 autor: Ignacio Williams
-fecha: 2026-05-09
+fecha: 2026-05-12
 titulo: Creacion de un nuevo detalle de prestamo de equipamiento
 ---
 
@@ -23,7 +23,7 @@ Permite digitalizar el registro de detalles de prestamos de equipamiento que se 
 
 
 ### Escenario de Exito
-- Si el usuario intenta registrar el detalle de un prestamo completando el formulario con los campos titulo y detalle, entonces el sistema registra el nuevo detalle de prestamo e informa con un mensaje de exito al usuario. 
+- Si el usuario intenta registrar el detalle de un prestamo completando el formulario con los campos titulo, fecha y detalle, entonces el sistema registra el nuevo detalle de prestamo e informa con un mensaje de exito al usuario. 
 
 ### Escenario de Fallo
 - Si el usuario intenta registrar el detalle de un prestamo completando el formulario con un prestamo de equipamiento que no existe, entonces el sistema debe emitir un mensaje de error notificando al usuario.
@@ -42,14 +42,13 @@ Se definira la entidad `Equipment_Loan` con las siguientes propiedades:
 
 ### Contrato de API (@alentapp/shared)
 [Definición de endpoints y tipos compartidos.]
-- Endpoint: `POST /api/v1/equipment-loan-details`
+- Endpoint: `POST /api/v1/equipment-loans/:id-loan/details`
 - Request Body (CreateEquipmentLoanDetailRequest):
 ```ts
 {
     title: string; //requerido
     date: date; //requerido
     detail: string; //requerido
-    equipment_loan_id: string; //requerido
 }
 ```
 
@@ -64,8 +63,8 @@ Se definira la entidad `Equipment_Loan` con las siguientes propiedades:
 | Escenario                   | Resultado Esperado                            | Código HTTP               |
 | ----------------------------| --------------------------------------------- | ------------------------- |
 | Prestamo inexistente | Mensaje: "El prestamo no existe" | 404 Not Found |
-| Campos vacios | Mensaje: "Los campos no pueden estar vacios" | 404 Not Found |
-| Formato invalido de `date` | Mensaje: "Formato de fecha invalido" | 404 Not Found |
+| Campos vacios | Mensaje: "Los campos no pueden estar vacios" | 400 Bad Request |
+| Formato invalido de `date` | Mensaje: "Formato de fecha invalido" | 400 Bad Request |
 | Error en la Base de Datos | Mensaje: "Error al procesar la operacion, intente mas tarde" | 500 Internal Server Error |
 
 ## Plan de Implementación
