@@ -54,6 +54,7 @@ Se definirá la entidad `Discipline` con las siguientes propiedades y restriccio
 - `end_date`: Fecha y hora de finalización de la sanción.
 - `is_total_suspension`: Valor booleano que indica si la sanción bloquea completamente al socio.
 - `member_id`: Identificador del socio sancionado (UUID, clave foránea hacia `Member`).
+- `deactivated_at`: DateTime | null (gestionado internamente por el sistema, se inicializa en null.)
 
 ### Contrato de API (@alentapp/shared)
 
