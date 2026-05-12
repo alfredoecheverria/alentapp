@@ -7,7 +7,7 @@ fecha: 2026-05-10
 titulo: Eliminar un detalle de prestamo de equipamiento
 ---
 
-# TDD-0017: Eliminacion de un detalle de prestamo de equipamiento
+# TDD-0020: Eliminacion de un detalle de prestamo de equipamiento
 
 ## Contexto de Negocio (PRD)
 
@@ -28,7 +28,7 @@ Permite eliminar un registro de detalle de prestamo de equipamiento de un socio,
 - Si el usuario intenta eliminar un detalle de prestamo mediante la seleccion en la lista de detalles y confirma la operacion, entonces el sistema debe eliminar el detalle de la base de datos e informar al usuario con un mensaje de exito y finalmente actualizar la tabla.
 
 ### Escenario de Fallo
-- Si el usuario intenta eliminar un detalle de prestamo con un id no existente medianete la seleccion en la lista de detalles y confirma la operacion, entonces el sistema debe rechazar la operacion y devolver un mensaje de error.
+- Si el usuario intenta eliminar un detalle de prestamo con un id no existente mediante la seleccion en la lista de detalles y confirma la operacion, entonces el sistema debe rechazar la operacion y devolver un mensaje de error.
 
 
 ## Diseño Técnico (RFC)
@@ -38,7 +38,7 @@ Permite eliminar un registro de detalle de prestamo de equipamiento de un socio,
 
 Como se trata de una operacion DELETE no requiere enviar todos los datos del prestamo, solo con el id del detalle se debe poder efectuar la operacion.
 
-- Endpoint: `DELETE /api/v1/equipment-loan-details/:id`
+- Endpoint: `DELETE /api/v1/equipment-loans/:id-loan/details/:id-detail`
 - Request Body: `None`
 - Response: `204 No Content` en caso de exito.
 
@@ -52,13 +52,13 @@ Como se trata de una operacion DELETE no requiere enviar todos los datos del pre
 ## Casos de Borde y Errores
 | Escenario                   | Resultado Esperado                            | Código HTTP               |
 | ----------------------------| --------------------------------------------- | ------------------------- |
-| Detalle de prestamo inexistente | Mensaje: "El detalle de prestamo seleccionado no existe" | 400 Bad Request |
+| Detalle de prestamo inexistente | Mensaje: "El detalle de prestamo seleccionado no existe" | 404 Not Found |
 | Eliminacion exitosa | Respuesta vacia | 204 No Content |
 | Error en la Base de Datos | Mensaje: "Error al procesar la operacion, intente mas tarde" | 500 Internal Server Error |
 
 ## Plan de Implementación
 1. Ampliar el `EquipmentLoanDetailRepository` y `PostgresEquipmentLoanDetailRepository` con el metodo `delete`.
 2. Implementar la logica de negocio en `DeleteEquipmentLoanDetailUseCase`.
-3. Implementar el endpoint `Delete /api/v1/equipment-loan-details/:id` en el `EquipmentLoanController` y registrarlo en `app.ts`.
-4. Agregar el metodo `delete` al servicio Frontend (`equipmentLoan.ts`).
+3. Implementar el endpoint `Delete /api/v1/equipment-loans/:id-loan/details/:id-detail` en el `EquipmentLoanController` y registrarlo en `app.ts`.
+4. Agregar el metodo `delete` al servicio Frontend (`equipmentLoanDetail.ts`).
 5. Enlazar el boton de eliminacion en `EquipmentLoanDetailView.tsx` agregando la configuracion del navegador (`window.confirm`) antes de hacer la llamada.
