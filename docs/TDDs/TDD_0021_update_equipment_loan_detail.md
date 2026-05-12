@@ -6,7 +6,7 @@ fecha: 2026-05-10
 titulo: Modificacion de detalle de prestamo de equipamiento
 ---
 
-# TDD-0018: Modificacion de detalle de prestamo de equipamiento
+# TDD-0021: Modificacion de detalle de prestamo de equipamiento
 
 ## Contexto de Negocio (PRD)
 
@@ -33,7 +33,7 @@ Permite al equipo administrativo modificar la informacion relacionada a un detal
 
 ### Contrato de API (@alentapp/shared)
 [Definición de endpoints y tipos compartidos.]
-- Endpoint: `PUT /api/v1/equipment-loan-details/:id`
+- Endpoint: `PUT /api/v1/equipment-loans/:id-loan/details/:id-detail`
 - Request Body (UpdateEquipmentLoanDetailRequest):
 ```ts
 {
@@ -54,7 +54,8 @@ Permite al equipo administrativo modificar la informacion relacionada a un detal
 ## Casos de Borde y Errores
 | Escenario                   | Resultado Esperado                            | Código HTTP               |
 | ----------------------------| --------------------------------------------- | ------------------------- |
-| Detalle inexistente | Mensaje: "El detalle no existe" | 400 Bad Request |
+| Detalle inexistente | Mensaje: "El detalle no existe" | 404 Not Found |
+| Sin campos a modificar | Mensaje: "Se debe indicar la menos un campo a modificar" | 400 Bad Request |
 | Formato de fecha invalido | Mensaje: "Formato invalido de fecha" | 400 Bad Request |
 | Modificar un campo a vacio | Mensaje: "No se permite modificar un campo a vacio" | 400 Bad Request |
 | Error en la Base de Datos | Mensaje: "Error al procesar la operacion, intente mas tarde" | 500 Internal Server Error |
