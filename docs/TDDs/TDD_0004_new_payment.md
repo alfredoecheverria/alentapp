@@ -68,6 +68,7 @@ Se definirá la entidad `Payment` con las siguientes propiedades:
 | ----------------------------| --------------------------------------------- | ------------------------- |
 | Usuario Inexistente         | Mensaje: "El usuario ingresado no existe"     | 404 Not Found             |
 | Monto Inválido              | Mensaje: "El valor del pago debe ser un numero mayor a cero"| 400 Bad Request |
+| Creación de un Pago con estado 'Cancelado'| Mensaje: "No se puede crear un pago con estado 'Cancelado'"| 400 Bad Request |
 | Pago ya registrado          | Mensaje: "Ya existe un pago registrado asociado a este socio en correspondiente al mes y año ingresados"  | 409 Confict |
 | Error en la Base de Datos   | Mensaje: "Error al procesar la operación, intente más tarde" | 500 Internal Server Error |
 
