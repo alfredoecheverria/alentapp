@@ -63,7 +63,7 @@ Se definirá la entidad `Discipline` con las siguientes propiedades y restriccio
 
 ```ts
 {
-    memberId: string;
+    member_id: string;
     reason: string;
     start_date: string;
     end_date: string;
