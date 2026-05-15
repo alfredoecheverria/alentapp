@@ -36,7 +36,7 @@ Permite al equipo administrativo modificar la informacion relacionada a un prest
 
 ### Contrato de API (@alentapp/shared)
 [Definición de endpoints y tipos compartidos.]
-- Endpoint: `PUT /api/v1/equipment_loan/:id`
+- Endpoint: `PUT /api/v1/equipment-loans/:id`
 - Request Body (UpdateEquipmentLoanRequest):
 ```ts
 {
