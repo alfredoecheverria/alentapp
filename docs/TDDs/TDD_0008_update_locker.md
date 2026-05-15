@@ -57,6 +57,7 @@ Permitir a los administrativos corregir o modificar la información de un locker
 | Escenario                                  | Resultado Esperado                                          | Código HTTP               |
 | ------------------------------------------ | ------------------------------------------------------------| ------------------------- |
 | `number` duplicado                         | Mensaje: "Ya existe un locker con ese número"               | 409 Conflict              |
+| Número inválido (<= 0 o no entero)         | Mensaje: "`number` debe ser entero y mayor a cero"          | 400 Bad Request           |
 | `member_id` con formato inválido           | Mensaje: "`member_id` no válido"                            | 400 Bad Request           |
 | `member_id` no existe                      | Mensaje: "El miembro indicado no existe"                    | 404 Not Found             |
 | `member_id` ya tiene otro locker           | Mensaje: "El miembro ya posee un locker"                    | 422 Unprocessable entity  |
