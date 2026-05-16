@@ -62,10 +62,11 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 
 ### Componentes de Arquitectura Hexagonal
 
-1. Puerto: EnrollmentRepository (Método `create(id, data)`).
-2. Caso de Uso: CreateEnrollment (Lógica que verifica si el miembro no está inscripto al deporte y la cantidad de inscripciones actuales es menor a la capacidad maxima del mismo antes de llamar al repositorio).
-3. Adaptador de Salida: PostgresEnrollmentRepository (Creacion del registro usando el método `create` de Prisma)
-4. Adaptador de Entrada: EnrollmentController (Ruta HTTP).
+1. **Puerto**: `EnrollmentRepository` (Método `create(id, data)`).
+2. **Servicio de Dominio**: `EnrollmentValidator` (Lógica que verifica si el miembro no está inscripto al deporte y la cantidad de inscripciones actuales es menor a la capacidad maxima del mismo antes de llamar al repositorio).
+3. **Caso de Uso**: `CreateEnrollmentUseCase` (Orquesta la validación y llama al repositorio).
+4. **Adaptador de Salida**: `PostgresEnrollmentRepository` (Creacion del registro usando el método `create` de Prisma).
+5. **Adaptador de Entrada**: `EnrollmentController` (Ruta HTTP)
 
 ## Casos de Borde y Errores
 
