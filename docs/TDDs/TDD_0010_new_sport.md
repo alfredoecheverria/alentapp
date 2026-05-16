@@ -62,7 +62,7 @@ Definiremos los tipos en el paquete compartido para asegurar sincronización:
 
 ### Componentes de Arquitectura Hexagonal
 
-1. **Puerto**: `SportRepository` (Método `create(id, data)`).
+1. **Puerto**: `SportRepository` (Método `create(data)`).
 2. **Servicio de Dominio**: `SportValidator` (Lógica que verifica si el `name` ya existe y si `max_capacity` es mayor a 0 antes de llamar al repositorio).
 3. **Caso de Uso**: `CreateSportUseCase` (Orquesta la validación y llama al repositorio).
 4. **Adaptador de Salida**: `PostgresSportRepository` (Creacion del registro usando el método `create` de Prisma).
