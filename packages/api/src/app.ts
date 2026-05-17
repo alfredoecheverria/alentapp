@@ -10,6 +10,7 @@ import { MemberController } from './delivery/MemberController.js';
 import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.ts'
 import { SportValidator } from './domain/services/SportValidator.ts'
 import { CreateSportUseCase } from './application/CreateSportUseCase.ts'
+import { GetSportsUseCase } from './application/GetSportsUseCase.ts'
 import { SportController } from './delivery/SportController.ts'
 
 export function buildApp() {
@@ -51,9 +52,11 @@ export function buildApp() {
     const sportValidator = new SportValidator(sportRepository);
 
     const createSportUseCase = new CreateSportUseCase(sportRepository, sportValidator);
+    const getSportsUseCase = new GetSportsUseCase(sportRepository);
 
     const sportController = new SportController(
         createSportUseCase,
+        getSportsUseCase,
     );
 
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
@@ -62,6 +65,7 @@ export function buildApp() {
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
 
     server.post('/api/v1/sports', sportController.create.bind(sportController));
+    server.get('/api/v1/sports', sportController.getAll.bind(sportController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })

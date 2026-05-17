@@ -35,7 +35,7 @@ import {
 } from "../components/ui/checkbox";
 
 export function SportsView() {
-  //const [sports, setSports] = useState<SportDTO[]>([]);
+  const [sports, setSports] = useState<SportDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +53,7 @@ export function SportsView() {
     requires_medical_certificate: false,
   });
 
-  /*const fetchSports = async () => {
+  const fetchSports = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -64,7 +64,7 @@ export function SportsView() {
     } finally {
       setIsLoading(false);
     }
-  };*/
+  };
 
   const openCreateModal = () => {
     setEditingSportId(null);
@@ -115,9 +115,9 @@ export function SportsView() {
     console.log("Not Implemented");
   };
 
-  /*useEffect(() => {
+  useEffect(() => {
     fetchSports();
-  }, []);*/
+  }, []);
 
   return (
     <DialogRoot open={isDialogOpen} onOpenChange={(e) => setIsDialogOpen(e.open)}>
@@ -130,7 +130,7 @@ export function SportsView() {
             </Text>
           </Stack>
           <HStack gap="3">
-            <Button variant="outline"  disabled={isLoading}>
+            <Button variant="outline" onClick={fetchSports} disabled={isLoading}>
               <LuRefreshCw /> Actualizar
             </Button>
             <Button colorPalette="blue" size="md" onClick={openCreateModal}>
@@ -225,7 +225,74 @@ export function SportsView() {
               <Text color="fg.muted">Cargando deportes...</Text>
             </Stack>
           </Center>
-        ) : <div></div>}
+        ) : sports.length === 0 ? (
+          <Center h="300px">
+            <Stack align="center" gap="4">
+              <Text color="fg.muted">No se encontraron deportes.</Text>
+              <Button variant="ghost" onClick={fetchSports}>Reintentar</Button>
+            </Stack>
+          </Center>
+        ) : (
+          <Table.Root size="md" variant="line" interactive>
+            <Table.Header>
+              <Table.Row bg="bg.muted/50">
+                <Table.ColumnHeader py="4">Nombre</Table.ColumnHeader>
+                <Table.ColumnHeader py="4">Descripcion</Table.ColumnHeader>
+                <Table.ColumnHeader py="4">Capacidad Máxima</Table.ColumnHeader>
+                <Table.ColumnHeader py="4">Precio Adicional</Table.ColumnHeader>
+                <Table.ColumnHeader py="4">Certificado Médico?</Table.ColumnHeader>
+                <Table.ColumnHeader py="4" textAlign="end">Acciones</Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {sports.map((sport) => (
+                <Table.Row key={sport.id} _hover={{ bg: "bg.muted/30" }}>
+                  <Table.Cell fontWeight="semibold" color="fg.emphasized">
+                    {sport.name}
+                  </Table.Cell>
+                  <Table.Cell color="fg.muted">{sport.description}</Table.Cell>
+                  <Table.Cell color="fg.muted">{sport.max_capacity}</Table.Cell>
+                  <Table.Cell color="fg.muted">{sport.additional_price}</Table.Cell>
+                  <Table.Cell>
+                    <Box
+                      display="inline-block"
+                      px="2"
+                      py="0.5"
+                      borderRadius="md"
+                      bg="blue.50"
+                      color="blue.700"
+                      fontSize="xs"
+                      fontWeight="bold"
+                    >
+                      {sport.requires_medical_certificate? 'Si' : 'No'}
+                    </Box>
+                  </Table.Cell>
+                  <Table.Cell textAlign="end">
+                    <HStack gap="2" justify="flex-end">
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Editar deporte"
+                        onClick={() => openEditModal(sport)}
+                      >
+                        <LuPencil />
+                      </IconButton>
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        colorPalette="red"
+                        aria-label="Eliminar deporte"
+                        onClick={() => handleDeleteSport(sport.id, sport.name)}
+                      >
+                        <LuTrash2 />
+                      </IconButton>
+                    </HStack>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        )}
         </Box>
     </Stack>
   </DialogRoot>
