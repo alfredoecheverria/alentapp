@@ -7,7 +7,7 @@ export class EnrollmentValidator {
         private readonly sportRepo: SportRepository
     ) {}
 
-    async validateMemberIsNotEnrolledYet(id: string, member_id: string) {
+    async validateMemberIsNotEnrolledYet(member_id: string, sport_id: string) {
         const exists = await this.enrollmentRepo.findByMemberIdAndSportId(member_id, sport_id);
         if (exists) {
             throw new Error('Ya existe una inscripcion del socio a este deporte');
