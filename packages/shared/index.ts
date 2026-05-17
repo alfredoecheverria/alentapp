@@ -55,6 +55,7 @@ export interface CreateSportRequest {
 export interface UpdateSportRequest {
     description?: string;
     max_capacity?: number;
+}
 
 // ==========================================
 // Locker
@@ -146,6 +147,7 @@ export interface CreatePaymentRequest {
   payment_date: string;
   year: number;
   month: number;
+}
 
 // ==========================================
 // Enrollment
