@@ -31,3 +31,28 @@ export interface UpdateMemberRequest {
   category?: MemberCategory;
   status?: MemberStatus;
 }
+
+
+// ==========================================
+// Equipment-Loan
+// ==========================================
+
+export type EquipmentLoanStatus = 'Loaned' | 'Returned' | 'Damaged';
+
+export interface EquipmentLoanDTO {
+  id: string; // UUID
+  item_name: string;
+  status: EquipmentLoanStatus;
+  loan_date: string; // ISO Date String (YYYY-MM-DD)
+  due_date: string; // ISO Date String (YYYY-MM-DD)
+  member_id: string;
+}
+
+export interface CreateEquipmentLoanRequest {
+  item_name: string;
+  status: EquipmentLoanStatus;
+  loan_date: string; // ISO Date String (YYYY-MM-DD)
+  due_date: string; // ISO Date String (YYYY-MM-DD)
+  member_id: string;
+}
+
