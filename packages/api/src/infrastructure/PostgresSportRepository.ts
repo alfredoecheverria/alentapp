@@ -80,13 +80,13 @@ export class PostgresSportRepository implements SportRepository {
     }
 
     async delete(id: string): Promise<void> {
-        const deletedEnrollments = await prisma.enrollment.delete({
+        const deletedEnrollments = prisma.enrollment.deleteMany({
             where: {
                 sport_id: id,
             },
         });
 
-        const deletedSports = await prisma.sport.delete({
+        const deletedSports = prisma.sport.delete({
             where: {
                 id: id,
             }

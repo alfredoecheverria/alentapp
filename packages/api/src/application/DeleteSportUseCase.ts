@@ -11,6 +11,6 @@ export class DeleteSportUseCase {
         }
 
         // Ejecutar eliminación
-        await this.existingSport.delete(id);
+        await this.sportRepo.delete(id);
     }
 }
