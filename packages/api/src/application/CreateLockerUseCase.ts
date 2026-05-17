@@ -2,7 +2,7 @@ import { CreateLockerRequest, LockerDTO } from "@alentapp/shared";
 import { LockerRepository } from "../domain/LockerRepository.js";
 import { LockerValidator } from "../domain/services/LockerValidator.js";
 
-export class NewLockerUseCase {
+export class CreateLockerUseCase {
     constructor(
         private readonly lockerRepository: LockerRepository,
         private readonly lockerValidator: LockerValidator

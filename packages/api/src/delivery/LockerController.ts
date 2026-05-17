@@ -1,9 +1,9 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { NewLockerUseCase } from '../application/NewLockerUseCase.js';
+import { CreateLockerUseCase } from '../application/CreateLockerUseCase.js';
 import { CreateLockerRequest } from '@alentapp/shared';
 
 export class LockerController {
-    constructor(private readonly newLockerUseCase: NewLockerUseCase) {}
+    constructor(private readonly createLockerUseCase: CreateLockerUseCase) {}
 
     async create(
         request: FastifyRequest<{ Body: CreateLockerRequest }>,
@@ -11,7 +11,7 @@ export class LockerController {
     ) {
         try {
             request.log.info('Alguien pegó al endpoint de lockers');
-            const locker = await this.newLockerUseCase.execute(request.body);
+            const locker = await this.createLockerUseCase.execute(request.body);
             return reply.status(201).send({ data: locker });
         } catch (error: any) {
             const msg = (error && error.message) ? String(error.message) : '';

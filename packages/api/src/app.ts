@@ -14,7 +14,7 @@ import { GetSportsUseCase } from './application/GetSportsUseCase.ts'
 import { SportController } from './delivery/SportController.ts'
 import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
 import { LockerValidator } from './domain/services/LockerValidator.js';
-import { NewLockerUseCase } from './application/NewLockerUseCase.js';
+import { CreateLockerUseCase } from './application/CreateLockerUseCase.js';
 import { LockerController } from './delivery/LockerController.js';
 
 export function buildApp() {
@@ -73,9 +73,9 @@ export function buildApp() {
 
     const lockerRepository = new PostgresLockerRepository();
     const lockerValidator = new LockerValidator(lockerRepository, memberRepo);
-    const newLockerUseCase = new NewLockerUseCase(lockerRepository, lockerValidator);
+    const createLockerUseCase = new CreateLockerUseCase(lockerRepository, lockerValidator);
     const lockerController = new LockerController(
-        newLockerUseCase,
+        createLockerUseCase,
     );
 
     server.post('/api/v1/lockers', lockerController.create.bind(lockerController));
