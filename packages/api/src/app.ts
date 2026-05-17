@@ -13,6 +13,7 @@ import { EquipmentLoanValidator } from './domain/services/EquipmentLoanValidator
 import { GetEquipmentLoansUseCase } from './application/GetEquipmentLoanUseCase.js';
 import { CreateEquipmentLoanUseCase } from './application/CreateEquipmentLoanUseCase.js';
 import { EquipmentLoanController } from './delivery/EquipmentLoanController.js';
+import { UpdateEquipmentLoanUseCase } from './application/UpdateEquipmentLoanUseCase.js';
 
 import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.ts'
 import { SportValidator } from './domain/services/SportValidator.ts'
@@ -112,10 +113,12 @@ export function buildApp() {
     const equipmentLoanValidator = new EquipmentLoanValidator(equipmentLoanRepository, memberRepo);
     const getEquipmentLoansUseCase = new GetEquipmentLoansUseCase(equipmentLoanRepository);
     const createEquipmentLoanUseCase = new CreateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator);
-
+    const updateEquipmentLoanUseCase = new UpdateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator); 
+    
     const equipmentLoanController = new EquipmentLoanController(
         createEquipmentLoanUseCase,
         getEquipmentLoansUseCase,
+        updateEquipmentLoanUseCase
     );
 
     server.get('/api/v1/equipment-loans', equipmentLoanController.getAll.bind(equipmentLoanController));
@@ -135,6 +138,20 @@ export function buildApp() {
         updateSportUseCase
     );
 
+    server.get('/api/v1/socios', memberController.getAll.bind(memberController));
+    server.post('/api/v1/socios', memberController.create.bind(memberController));
+    server.put('/api/v1/socios/:id', memberController.update.bind(memberController));
+    server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
+
+    
+    server.post('/api/v1/payments', paymentController.create.bind(paymentController));
+    server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
+    server.put('/api/v1/payments/:id', paymentController.update.bind(paymentController));
+    
+    server.get('/api/v1/equipment-loans', equipmentLoanController.getAll.bind(equipmentLoanController));
+    server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
+    server.put('/api/v1/equipment-loans/:id', equipmentLoanController.update.bind(equipmentLoanController));
+    
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
     server.put('/api/v1/sports/:id', sportController.update.bind(sportController));
