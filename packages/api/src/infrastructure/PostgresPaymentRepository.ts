@@ -71,4 +71,23 @@ export class PostgresPaymentRepository implements PaymentRepository {
             month: payment.month,
         };
     }
+
+    async update(id: string, data: Partial<CreatePaymentRequest>): Promise<PaymentDTO> {
+        const payment = await prisma.payment.update({
+            where: { id },
+            data: {
+                ...(data.amount !== undefined && { amount: data.amount }),
+                ...(data.status && { status: data.status }),
+                ...(data.due_date && { due_date: new Date(data.due_date) }),
+                ...(data.payment_date && { payment_date: new Date(data.payment_date) }),
+                ...(data.year !== undefined && { year: data.year }),
+                ...(data.month !== undefined && { month: data.month }),
+                ...(data.member_id && {
+                    member: { connect: { id: data.member_id } }
+                }),
+            },
+        });
+
+        return this.mapToDTO(payment);
+    }
 }   

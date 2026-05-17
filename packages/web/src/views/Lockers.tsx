@@ -12,9 +12,9 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { LuPlus, LuRefreshCw, LuTrash2 } from "react-icons/lu";
+import { LuPencil, LuPlus, LuRefreshCw, LuTrash2 } from "react-icons/lu";
 import { useEffect, useState } from "react";
-import { type CreateLockerRequest, type LockerDTO, type LockerStatus, type MemberDTO } from "@alentapp/shared";
+import { type CreateLockerRequest, type LockerDTO, type LockerStatus, type MemberDTO, type UpdateLockerRequest } from "@alentapp/shared";
 import { lockersService } from "../services/lockers";
 import { membersService } from "../services/members";
 import {
@@ -48,6 +48,7 @@ const statusOptions = createListCollection({
 export function LockersView() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingLockerId, setEditingLockerId] = useState<string | null>(null);
   const [members, setMembers] = useState<MemberDTO[]>([]);
   const [lockers, setLockers] = useState<LockerDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -99,6 +100,7 @@ export function LockersView() {
   });
 
   const openCreateModal = () => {
+    setEditingLockerId(null);
     setFormData({
       number: 0,
       location: "",
@@ -108,12 +110,32 @@ export function LockersView() {
     setIsDialogOpen(true);
   };
 
+  const openEditModal = (locker: LockerDTO) => {
+    setEditingLockerId(locker.id);
+    setFormData({
+      number: locker.number,
+      location: locker.location,
+      status: locker.status,
+      member_id: locker.member_id,
+    });
+    setIsDialogOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await lockersService.create(formData);
+      if (editingLockerId) {
+        const updatePayload: UpdateLockerRequest = {
+          ...formData,
+          member_id: formData.member_id ?? null,
+        };
+        await lockersService.update(editingLockerId, updatePayload);
+      } else {
+        await lockersService.create(formData);
+      }
       setIsDialogOpen(false);
+      setEditingLockerId(null);
       setFormData({
         number: 0,
         location: "",
@@ -210,15 +232,25 @@ export function LockersView() {
                       {locker.member ? `${locker.member.name} (${locker.member.dni})` : "Sin asignar"}
                     </Table.Cell>
                     <Table.Cell>
-                      <IconButton
-                        aria-label="Eliminar locker"
-                        variant="ghost"
-                        colorPalette="red"
-                        size="sm"
-                        onClick={() => handleDeleteLocker(locker.id, locker.number)}
-                      >
-                        <LuTrash2 />
-                      </IconButton>
+                      <HStack gap="2">
+                        <IconButton
+                          aria-label="Editar locker"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditModal(locker)}
+                        >
+                          <LuPencil />
+                        </IconButton>
+                        <IconButton
+                          aria-label="Eliminar locker"
+                          variant="ghost"
+                          colorPalette="red"
+                          size="sm"
+                          onClick={() => handleDeleteLocker(locker.id, locker.number)}
+                        >
+                          <LuTrash2 />
+                        </IconButton>
+                      </HStack>
                     </Table.Cell>
                   </Table.Row>
                 ))}
@@ -238,7 +270,7 @@ export function LockersView() {
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Agregar Nuevo Locker</DialogTitle>
+              <DialogTitle>{editingLockerId ? "Editar Locker" : "Agregar Nuevo Locker"}</DialogTitle>
             </DialogHeader>
             <DialogBody>
               <Stack gap="4">
@@ -273,12 +305,14 @@ export function LockersView() {
                   <SelectRoot
                     collection={statusOptions}
                     value={[formData.status || "Available"]}
-                    onValueChange={(e) =>
+                    onValueChange={(e) => {
+                      const nextStatus = e.value[0] as LockerStatus;
                       setFormData({
                         ...formData,
-                        status: e.value[0] as LockerStatus,
-                      })
-                    }
+                        status: nextStatus,
+                        member_id: nextStatus === "Occupied" ? formData.member_id : undefined,
+                      });
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValueText placeholder="Seleccione un estado" />
@@ -323,7 +357,7 @@ export function LockersView() {
                 <Button variant="outline">Cancelar</Button>
               </DialogActionTrigger>
               <Button type="submit" colorPalette="blue" loading={isSubmitting}>
-                Agregar Locker
+                {editingLockerId ? "Guardar Cambios" : "Agregar Locker"}
               </Button>
             </DialogFooter>
             <DialogCloseTrigger />

@@ -1,8 +1,9 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreateEquipmentLoanUseCase } from '../application/CreateEquipmentLoanUseCase.js';
-import { CreateEquipmentLoanRequest } from '@alentapp/shared';
+import { CreateEquipmentLoanRequest, UpdateEquipmentLoanRequest } from '@alentapp/shared';
 import { GetEquipmentLoansUseCase } from '../application/GetEquipmentLoanUseCase.js';
 import { DeleteEquipmentLoanUseCase } from '../application/DeleteEquipmentLoanUseCase.js';
+import { UpdateEquipmentLoanUseCase } from '../application/UpdateEquipmentLoanUseCase.js';
 
 export class EquipmentLoanController {
 
@@ -10,6 +11,7 @@ export class EquipmentLoanController {
         private readonly createEquipmentLoanUseCase: CreateEquipmentLoanUseCase,
         private readonly getEquipmentLoansUseCase: GetEquipmentLoansUseCase,
         private readonly deleteEquipmentLoanUseCase: DeleteEquipmentLoanUseCase 
+        private readonly updateEquipmentLoanUseCase: UpdateEquipmentLoanUseCase
     ) {}
 
 
@@ -67,5 +69,30 @@ export class EquipmentLoanController {
         }
     }
     
+    async update(
+        request: FastifyRequest<{ Params: { id: string }; Body: UpdateEquipmentLoanRequest }>,
+        reply: FastifyReply
+    ) {
+        try {
+            const equipmentLoan = await this.updateEquipmentLoanUseCase.execute(request.params.id, request.body);
+            return reply.status(200).send({ data: equipmentLoan });
+        } catch (error: any) {
+            request.log.error(error);
+
+            if (error.message.includes('El usuario no existe')) {
+                return reply.status(404).send({ error: error.message });
+            }
+
+            if (error.message.includes('Fecha prestamo no puede ser posterior a Fecha Devolucion')) {
+                return reply.status(400).send({ error: error.message });
+            }
+
+            if (error.message.includes('Solo se permite realizar prestamos a miembros con categoria Senior o Lifetime')) {
+                return reply.status(400).send({ error: error.message });
+            }
+
+            return reply.status(500).send({ error: "Error al procesar la operacion, intente mas tarde" });
+        }
+    }
 }
 

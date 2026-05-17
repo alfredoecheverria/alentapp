@@ -1,6 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { LockerStatus, PrismaClient } from '../generated/client/client.js';
-import { CreateLockerRequest, LockerDTO, MemberDTO } from '@alentapp/shared';
+import { CreateLockerRequest, LockerDTO, MemberDTO, UpdateLockerRequest } from '@alentapp/shared';
 import { LockerRepository } from '../domain/LockerRepository.js';
 
 if (!process.env.DATABASE_URL) {
@@ -82,6 +82,21 @@ export class PostgresLockerRepository implements LockerRepository {
             where: { id },
         });
     }
+
+    async update(id: string, data: UpdateLockerRequest): Promise<LockerDTO>{
+        const locker = await prisma.locker.update({
+            where: { id },
+            data: {
+                ...(data.number && { number: data.number }),
+                ...(data.location && { location: data.location }),
+                ...(data.status && { status: data.status }),
+                ...(data.member_id !== undefined && { member_id: data.member_id }),
+            },
+        });
+
+        return this.mapToDTO(locker);
+    }
+    
 
     private mapToDTO(locker: DBLocker): LockerDTO {
         return {

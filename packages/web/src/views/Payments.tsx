@@ -3,6 +3,7 @@ import {
   Button, 
   Heading, 
   HStack, 
+  IconButton,
   Stack, 
   Text, 
   Box,
@@ -11,7 +12,7 @@ import {
   Center,
   Input
 } from "@chakra-ui/react";
-import { LuPlus, LuRefreshCw } from "react-icons/lu";
+import { LuPlus, LuRefreshCw, LuPencil, LuTrash2 } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import { paymentsService } from "../services/payments";
 import type { PaymentDTO, CreatePaymentRequest, PaymentStatus } from "@alentapp/shared";
@@ -52,6 +53,7 @@ export function PaymentsView() {
   // State for the modal
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<CreatePaymentRequest & { status?: PaymentStatus }>({
@@ -78,16 +80,39 @@ export function PaymentsView() {
   };
 
     const openCreateModal = () => {
+        setEditingPaymentId(null);
         setFormData({ amount: 0, due_date: "", member_id: "", status: "Pendiente", payment_date: "", year: 0, month: 0 });
         setIsDialogOpen(true);
     };
+
+    const openEditModal = (payment: PaymentDTO) => {
+        setEditingPaymentId(payment.id);
+        setFormData({
+            amount: payment.amount,
+            due_date: payment.due_date,
+            member_id: payment.member_id,
+            status: payment.status,
+            payment_date: payment.payment_date,
+            year: payment.year,
+            month: payment.month
+        });
+        setIsDialogOpen(true);
+    };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+
+      if (editingPaymentId) {
+        await paymentsService.update(editingPaymentId, formData as CreatePaymentRequest);
+        setIsDialogOpen(false); 
+        fetchPayments();
+      } else {
         await paymentsService.create(formData as CreatePaymentRequest);
         setIsDialogOpen(false);
-        fetchPayments(); // Refresh the list
+        fetchPayments(); 
+      }
     } catch (err: any) {
       alert(err.message || "Error al guardar el pago");
     } finally {
@@ -123,12 +148,12 @@ export function PaymentsView() {
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{"Agregar Nuevo Pago"}</DialogTitle>
+              <DialogTitle>{editingPaymentId ? "Editar Pago" : "Agregar Nuevo Pago"}</DialogTitle>
             </DialogHeader>
             <DialogBody>
               <Stack gap="4">
 
-                <Field label="DNI del Socio" required>
+                <Field label="ID del Socio" required>
                   <Input 
                     placeholder="Ej. 12345678" 
                     value={formData.member_id}
@@ -205,7 +230,7 @@ export function PaymentsView() {
                 <Button variant="outline">Cancelar</Button>
               </DialogActionTrigger>
               <Button type="submit" colorPalette="blue" loading={isSubmitting}>
-                {"Crear Pago"}
+                {editingPaymentId ? "Actualizar Pago" : "Crear Pago"}
               </Button>
             </DialogFooter>
             <DialogCloseTrigger />
@@ -232,7 +257,7 @@ export function PaymentsView() {
           <Center h="300px">
             <Stack align="center" gap="4">
               <Spinner size="xl" color="blue.500" />
-              <Text color="fg.muted">Cargando miembros...</Text>
+              <Text color="fg.muted">Cargando pagos...</Text>
             </Stack>
           </Center>
         ) : payments.length === 0 ? (
@@ -273,20 +298,6 @@ export function PaymentsView() {
                       px="2" 
                       py="0.5" 
                       borderRadius="md" 
-                      bg="blue.50" 
-                      color="blue.700" 
-                      fontSize="xs" 
-                      fontWeight="bold"
-                    >
-                      {payment.status}
-                    </Box>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Box 
-                      display="inline-block" 
-                      px="2" 
-                      py="0.5" 
-                      borderRadius="md" 
                       bg={payment.status === 'Pago' ? 'green.50' : 'orange.50'} 
                       color={payment.status === 'Pago' ? 'green.700' : 'orange.700'} 
                       fontSize="xs" 
@@ -297,6 +308,23 @@ export function PaymentsView() {
                   </Table.Cell>
                   <Table.Cell textAlign="end">
                     <HStack gap="2" justify="flex-end">
+                      <IconButton 
+                        variant="ghost" 
+                        size="sm" 
+                        aria-label="Editar pago"
+                        onClick={() => openEditModal(payment)}
+                      >
+                        <LuPencil />
+                      </IconButton>
+                      <IconButton 
+                        variant="ghost" 
+                        size="sm" 
+                        colorPalette="red" 
+                        aria-label="Eliminar pago"
+                        onClick={() => {}}
+                      >
+                        <LuTrash2 />
+                      </IconButton>
                     </HStack>
                   </Table.Cell>
                 </Table.Row>

@@ -1,4 +1,4 @@
-import type { CreateEquipmentLoanRequest, EquipmentLoanDTO } from "@alentapp/shared";
+import type { CreateEquipmentLoanRequest, UpdateEquipmentLoanRequest, EquipmentLoanDTO } from "@alentapp/shared";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000") + "/api/v1";
 
@@ -32,6 +32,7 @@ export const equipmentLoansService = {
         return result.data;
     },
 
+  
     async delete(id: string): Promise<void> {
         const response = await fetch(`${API_URL}/equipment-loans/${id}`, {
             method: 'DELETE',
@@ -41,6 +42,25 @@ export const equipmentLoansService = {
             const errorData = await response.json();
             throw new Error(errorData.error || 'Error al eliminar el prestamo de equipamiento');
         }
-    }
+    },
 
+  
+    async update(id: string, data: UpdateEquipmentLoanRequest): Promise<EquipmentLoanDTO> {
+        const response = await fetch(`${API_URL}/equipment-loans/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error al actualizar el prestamo de equipamiento');
+        }
+
+        const result = await response.json();
+        return result.data;
+    }
+    
 };

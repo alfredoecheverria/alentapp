@@ -1,18 +1,59 @@
 import {
+  Table,
   Button,
   Heading,
+  HStack,
   Stack,
   Text,
   Box,
+  Flex,
+  Spinner,
+  Center,
   Input,
   Checkbox,
 } from "@chakra-ui/react";
-import { useState } from "react";
+
+import { LuPlus, LuRefreshCw } from "react-icons/lu";
+import { useEffect, useState } from "react";
+
+import type {CreateDisciplineRequest, DisciplineDTO, MemberDTO,} from "@alentapp/shared";
+
 import { disciplinesService } from "../services/disciplines";
-import type { CreateDisciplineRequest } from "@alentapp/shared";
+import { membersService } from "../services/members";
+
+import {
+  DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+  DialogActionTrigger,
+  DialogCloseTrigger,
+} from "../components/ui/dialog";
+
+import { Field } from "../components/ui/field";
+
+import {
+  SelectRoot,
+  SelectTrigger,
+  SelectValueText,
+  SelectContent,
+  SelectItem,
+  createListCollection,
+} from "../components/ui/select";
 
 export function DisciplinesView() {
-  const [form, setForm] = useState<CreateDisciplineRequest>({
+  const [disciplines, setDisciplines] = useState<DisciplineDTO[]>([]);
+  const [members, setMembers] = useState<MemberDTO[]>([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formData, setFormData] = useState<CreateDisciplineRequest>({
     member_id: "",
     reason: "",
     start_date: "",
@@ -20,94 +61,352 @@ export function DisciplinesView() {
     is_total_suspension: false,
   });
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const fetchDisciplines = async () => {
+    setIsLoading(true);
+    setError(null);
 
-  const handleChange = (e: any) => {
-    const { name, value, type, checked } = e.target;
+    try {
+      const data = await disciplinesService.getAll();
+      setDisciplines(data);
+    } catch (err: any) {
+      setError(err.message || "Error al cargar sanciones");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+  const fetchMembers = async () => {
+    try {
+      const data = await membersService.getAll();
+      setMembers(data);
+    } catch (err) {
+      console.error("Error al cargar miembros", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDisciplines();
+    fetchMembers();
+  }, []);
+
+  const memberOptions = createListCollection({
+    items: members.map((member) => ({
+      label: `${member.name} (${member.dni})`,
+      value: member.id,
+    })),
+  });
+
+  const openCreateModal = () => {
+    setFormData({
+      member_id: "",
+      reason: "",
+      start_date: "",
+      end_date: "",
+      is_total_suspension: false,
+    });
+
+    setIsDialogOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage(null);
+
+    setIsSubmitting(true);
 
     try {
-      await disciplinesService.create(form);
-      setMessage("Sanción creada correctamente");
-      setForm({
-        member_id: "",
-        reason: "",
-        start_date: "",
-        end_date: "",
-        is_total_suspension: false,
-      });
+      await disciplinesService.create(formData);
+
+      setIsDialogOpen(false);
+
+      fetchDisciplines();
     } catch (err: any) {
-      setMessage(err.message);
+      alert(err.message || "Error al crear sanción");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Stack gap="6">
-      <Heading>Gestión de Sanciones</Heading>
+    <DialogRoot
+      open={isDialogOpen}
+      onOpenChange={(e) => setIsDialogOpen(e.open)}
+    >
+      <Stack gap="8">
+        <Flex justify="space-between" align="center">
+          <Stack gap="1">
+            <Heading size="2xl" fontWeight="bold">
+              Gestión de Sanciones
+            </Heading>
 
-      <Box as="form" onSubmit={handleSubmit} p="4" borderWidth="1px" borderRadius="lg">
-        <Stack gap="3">
+            <Text color="fg.muted" fontSize="md">
+              Administración de sanciones y suspensiones de socios.
+            </Text>
+          </Stack>
 
-          <Input
-            name="member_id"
-            placeholder="ID del socio"
-            value={form.member_id}
-            onChange={handleChange}
-          />
+          <HStack gap="3">
+            <Button
+              variant="outline"
+              onClick={fetchDisciplines}
+              disabled={isLoading}
+            >
+              <LuRefreshCw /> Actualizar
+            </Button>
 
-          <Input
-            name="reason"
-            placeholder="Motivo"
-            value={form.reason}
-            onChange={handleChange}
-          />
+            <Button
+              colorPalette="blue"
+              size="md"
+              onClick={openCreateModal}
+            >
+              <LuPlus /> Nueva sanción
+            </Button>
+          </HStack>
+        </Flex>
 
-          <Input
-            type="date"
-            name="start_date"
-            value={form.start_date}
-            onChange={handleChange}
-          />
+        {/* Modal crear sanción */}
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
+            <DialogHeader>
+              <DialogTitle>Crear nueva sanción</DialogTitle>
+            </DialogHeader>
 
-          <Input
-            type="date"
-            name="end_date"
-            value={form.end_date}
-            onChange={handleChange}
-          />
+            <DialogBody>
+              <Stack gap="4">
+                <Field label="Socio" required>
+                  <SelectRoot
+                    collection={memberOptions}
+                    value={formData.member_id ? [formData.member_id] : []}
+                    onValueChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        member_id: e.value[0],
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValueText placeholder="Seleccione un socio" />
+                    </SelectTrigger>
 
-          <Checkbox.Root>
-            <Checkbox.HiddenInput
-            name="is_total_suspension"
-            Checked={form.is_total_suspension}
-            onChange={handleChange}
-          />
-            <Checkbox.Control />
-            <Checkbox.Label>
-                Suspensión total
-            </Checkbox.Label>
-          </Checkbox.Root>
+                    <SelectContent>
+                      {memberOptions.items.map((member) => (
+                        <SelectItem
+                          item={member}
+                          key={member.value}
+                        >
+                          {member.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </SelectRoot>
+                </Field>
 
-          <Button type="submit" colorScheme="blue" isLoading={loading}>
-            Crear sanción
-          </Button>
+                <Field label="Motivo" required>
+                  <Input
+                    placeholder="Ej. Conducta inapropiada"
+                    value={formData.reason}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        reason: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </Field>
 
-          {message && <Text>{message}</Text>}
-        </Stack>
-      </Box>
-    </Stack>
+                <Field label="Fecha de inicio" required>
+                  <Input
+                    type="date"
+                    value={formData.start_date}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        start_date: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </Field>
+
+                <Field label="Fecha de fin" required>
+                  <Input
+                    type="date"
+                    value={formData.end_date}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        end_date: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </Field>
+
+                <Checkbox.Root
+                  checked={formData.is_total_suspension}
+                  onCheckedChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      is_total_suspension: value,
+                    })
+                  }
+                >
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control />
+                  <Checkbox.Label>
+                    Suspensión total
+                  </Checkbox.Label>
+                </Checkbox.Root>
+              </Stack>
+            </DialogBody>
+
+            <DialogFooter>
+              <DialogActionTrigger asChild>
+                <Button variant="outline">
+                  Cancelar
+                </Button>
+              </DialogActionTrigger>
+
+              <Button
+                type="submit"
+                colorPalette="blue"
+                loading={isSubmitting}
+              >
+                Crear sanción
+              </Button>
+            </DialogFooter>
+
+            <DialogCloseTrigger />
+          </form>
+        </DialogContent>
+
+        {/* Error */}
+        {error && (
+          <Box
+            p="4"
+            bg="red.50"
+            color="red.700"
+            borderRadius="md"
+            border="1px solid"
+            borderColor="red.200"
+          >
+            <Text fontWeight="bold">Error:</Text>
+            <Text>{error}</Text>
+          </Box>
+        )}
+
+        {/* Tabla */}
+        <Box
+          bg="bg.panel"
+          borderRadius="xl"
+          boxShadow="sm"
+          borderWidth="1px"
+          overflow="hidden"
+          minH="300px"
+          position="relative"
+        >
+          {isLoading ? (
+            <Center h="300px">
+              <Stack align="center" gap="4">
+                <Spinner size="xl" color="blue.500" />
+                <Text color="fg.muted">
+                  Cargando sanciones...
+                </Text>
+              </Stack>
+            </Center>
+          ) : disciplines.length === 0 ? (
+            <Center h="300px">
+              <Stack align="center" gap="4">
+                <Text color="fg.muted">
+                  No se encontraron sanciones.
+                </Text>
+
+                <Button
+                  variant="ghost"
+                  onClick={fetchDisciplines}
+                >
+                  Reintentar
+                </Button>
+              </Stack>
+            </Center>
+          ) : (
+            <Table.Root size="md" variant="line" interactive>
+              <Table.Header>
+                <Table.Row bg="bg.muted/50">
+                  <Table.ColumnHeader py="4">
+                    Socio
+                  </Table.ColumnHeader>
+
+                  <Table.ColumnHeader py="4">
+                    Motivo
+                  </Table.ColumnHeader>
+
+                  <Table.ColumnHeader py="4">
+                    Inicio
+                  </Table.ColumnHeader>
+
+                  <Table.ColumnHeader py="4">
+                    Fin
+                  </Table.ColumnHeader>
+
+                  <Table.ColumnHeader py="4">
+                    Tipo
+                  </Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+
+              <Table.Body>
+                {disciplines.map((discipline) => (
+                  <Table.Row
+                    key={discipline.id}
+                    _hover={{ bg: "bg.muted/30" }}
+                  >
+                    <Table.Cell>
+                      {discipline.member_id}
+                    </Table.Cell>
+
+                    <Table.Cell>
+                      {discipline.reason}
+                    </Table.Cell>
+
+                    <Table.Cell>
+                      {discipline.start_date}
+                    </Table.Cell>
+
+                    <Table.Cell>
+                      {discipline.end_date}
+                    </Table.Cell>
+
+                    <Table.Cell>
+                      <Box
+                        display="inline-block"
+                        px="2"
+                        py="0.5"
+                        borderRadius="md"
+                        bg={
+                          discipline.is_total_suspension
+                            ? "red.50"
+                            : "orange.50"
+                        }
+                        color={
+                          discipline.is_total_suspension
+                            ? "red.700"
+                            : "orange.700"
+                        }
+                        fontSize="xs"
+                        fontWeight="bold"
+                      >
+                        {discipline.is_total_suspension
+                          ? "Total"
+                          : "Parcial"}
+                      </Box>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          )}
+        </Box>
+      </Stack>
+    </DialogRoot>
   );
 }

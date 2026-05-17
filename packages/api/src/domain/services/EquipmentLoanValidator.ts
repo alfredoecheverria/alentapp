@@ -34,6 +34,14 @@ export class EquipmentLoanValidator {
     }
 
 
+    async validateLoanExists(loanId: string): Promise<void> {
+        const loanExists = await this.equipmentLoanRepo.findById(loanId);
+        
+        if (!loanExists) {
+            throw new Error('El préstamo de equipamiento solicitado no existe');
+        }
+    }
+
     //Fecha de prestamo posterior a fecha de devolucion
     validateLoanDates(loanDate: string, dueDate: string): void {
         const loanDateObj = new Date(loanDate);
