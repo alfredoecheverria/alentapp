@@ -1,13 +1,15 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreatePaymentUseCase } from '../application/CreatePaymentUseCase.js';
 import { GetPaymentUseCase } from '../application/GetPaymentUseCase.js';
+import { UpdatePaymentUseCase } from '../application/UpdatePaymentUseCase.js';
 
-import { CreatePaymentRequest } from '@alentapp/shared/index.js';
+import { CreatePaymentRequest, UpdatePaymentRequest } from '@alentapp/shared/index.js';
 
 export class PaymentController {
     constructor(
         private readonly createPaymentUseCase: CreatePaymentUseCase,
-        private readonly getPaymentUseCase: GetPaymentUseCase
+        private readonly getPaymentUseCase: GetPaymentUseCase,
+        private readonly updatePaymentUseCase: UpdatePaymentUseCase,
     ) {}
 
     async create(
@@ -22,6 +24,24 @@ export class PaymentController {
                 return reply.status(400).send({ error: error.message });
             }
             return reply.status(500).send({ error: "Error interno, reintente más tarde" });
+        }
+    }
+
+    async update(
+        request: FastifyRequest<{ Params: {id: string}; Body: UpdatePaymentRequest }>,
+        reply: FastifyReply,
+    ) {
+        try {
+            const { id } = request.params;
+            const pago = await this.updatePaymentUseCase.execute(id, request.body);
+            return reply.status(200).send({ data: pago });
+        } catch (error: any) {
+            console.error(error);
+
+                return reply.status(500).send({
+                    error: error.message,
+                    stack: error.stack
+                });
         }
     }
 

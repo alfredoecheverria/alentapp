@@ -58,4 +58,37 @@ export class PaymentValidator {
         }
     }
 
+    //validacion de que no exista un pago para el mismo socio, año y mes. Esto es para evitar que se creen pagos duplicados.
+    async validateNoDuplicatePayment(memberId: string, year: number, month: number, paymentIdToExclude?: string): Promise<void> {
+        const payments = await this.paymentRepo.findByMemberId(memberId);
+        
+        const duplicatePayment = payments.find(payment => 
+            payment.year === year && 
+            payment.month === month && 
+            payment.id !== paymentIdToExclude 
+        );
+        
+        if (duplicatePayment) {
+            throw new Error(`Ya existe un pago para el socio ${memberId} en el año ${year} y mes ${month}.`);
+        }
+    }
+
+    //validacion de que el pago exista
+    async validatePaymentExists(paymentId: string): Promise<void> {
+        const payment = await this.paymentRepo.findById(paymentId);
+        
+        if (!payment) {
+            throw new Error(`El pago con ID ${paymentId} no existe.`);
+        }
+    }
+
+    //validacion de que el pago si esta pago no se pueda cambiar a pendiente o cancelado. Tampoco se puede cambiar de pendiente a cancelado.
+    validateStatusTransition(currentStatus: PaymentStatus, newStatus: PaymentStatus): void {
+        if (currentStatus === 'Pago' && (newStatus === 'Pendiente' || newStatus === 'Cancelado')) {
+            throw new Error('No se puede cambiar el estado de un pago que ya fue pagado a Pendiente o Cancelado');
+        }
+        if (currentStatus === 'Pendiente' && newStatus === 'Cancelado') {
+            throw new Error('No se puede cambiar el estado de un pago de Pendiente a Cancelado');
+        }
+    }   
 }
