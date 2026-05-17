@@ -89,13 +89,17 @@ export function DisciplinesView() {
             onChange={handleChange}
           />
 
-          <Checkbox
+          <Checkbox.Root>
+            <Checkbox.HiddenInput
             name="is_total_suspension"
-            isChecked={form.is_total_suspension}
+            Checked={form.is_total_suspension}
             onChange={handleChange}
-          >
-            Suspensión total
-          </Checkbox>
+          />
+            <Checkbox.Control />
+            <Checkbox.Label>
+                Suspensión total
+            </Checkbox.Label>
+          </Checkbox.Root>
 
           <Button type="submit" colorScheme="blue" isLoading={loading}>
             Crear sanción
