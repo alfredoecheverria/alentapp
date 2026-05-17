@@ -2,10 +2,6 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreateDisciplineUseCase } from '../application/CreateDisciplineUseCase.js';
 import { CreateDisciplineRequest } from '@alentapp/shared';
 
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { CreateDisciplineUseCase } from '../application/CreateDisciplineUseCase.js';
-import { CreateDisciplineRequest } from '@alentapp/shared';
-
 export class DisciplineController {
     constructor(
         private readonly createDisciplineUseCase: CreateDisciplineUseCase,
