@@ -15,6 +15,7 @@ export class CreatePaymentUseCase {
         this.paymentValidator.validateInitialStatus(data.status)
         this.paymentValidator.validateYearRange(data.year)
         this.paymentValidator.validateMonthRange(data.month)
+        this.paymentValidator.validateMemberExists(data.member_id)
 
         const nuevoPago = await this.paymentRepository.create({
             ...data

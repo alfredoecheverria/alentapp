@@ -1,8 +1,11 @@
 import { PaymentRepository } from "../PaymentRepository.js";
+import { MemberRepository } from "../MemberRepository.js";
 import { PaymentStatus } from "@alentapp/shared/index.js";
 
 export class PaymentValidator {
-    constructor(private readonly paymentRepo: PaymentRepository) {}
+    constructor(
+        private readonly paymentRepo: PaymentRepository,
+        private readonly memberRepo: MemberRepository) {}
 
     //validacion del monto
     validateAmount(amount: number): void {
@@ -43,6 +46,15 @@ export class PaymentValidator {
     validateMonthRange(month: number): void {
         if (month < 1 || month > 12) { 
             throw new Error(`El mes ${month} es inválido. Debe estar entre 1 y 12`); 
+        }
+    }
+
+    //validacion de que exista el socio
+    async validateMemberExists(memberId: string): Promise<void> {
+        const member = await this.memberRepo.findById(memberId);
+        
+        if (!member) {
+            throw new Error(`El socio con ID ${memberId} no existe.`);
         }
     }
 
