@@ -9,6 +9,7 @@ import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
 import { PostgresEquipmentLoanRepository } from './infrastructure/PostgresEquipmentLoanRepository.js';
 import { EquipmentLoanValidator } from './domain/services/EquipmentLoanValidator.js';
+import { GetEquipmentLoansUseCase } from './application/GetEquipmentLoanUseCase.js';
 import { CreateEquipmentLoanUseCase } from './application/CreateEquipmentLoanUseCase.js';
 import { EquipmentLoanController } from './delivery/EquipmentLoanController.js';
 
@@ -82,13 +83,17 @@ export function buildApp() {
         createPaymentUseCase,
         getPaymentUseCase
     );
+
+
     const equipmentLoanRepository = new PostgresEquipmentLoanRepository();
     const equipmentLoanValidator = new EquipmentLoanValidator(equipmentLoanRepository, memberRepo);
+    const getEquipmentLoansUseCase = new GetEquipmentLoansUseCase(equipmentLoanRepository);
     const createEquipmentLoanUseCase = new CreateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator);
 
     
     const equipmentLoanController = new EquipmentLoanController(
         createEquipmentLoanUseCase,
+        getEquipmentLoansUseCase,
     );
 
 
@@ -111,7 +116,12 @@ export function buildApp() {
     
     server.post('/api/v1/payments', paymentController.create.bind(paymentController));
     server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
+    
+    
+    server.get('/api/v1/equipment-loans', equipmentLoanController.getAll.bind(equipmentLoanController));
     server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
+
+    
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
 

@@ -4,7 +4,14 @@ const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000") + "/ap
 
 export const equipmentLoansService = {
 
-
+    async getAll(): Promise<EquipmentLoanDTO[]> {
+        const response = await fetch(`${API_URL}/equipment-loans`);
+        if (!response.ok) {
+            throw new Error("Error al obtener los prestamos de equipamiento");
+        }
+        const result = await response.json();
+        return result.data;
+    },
 
 
     async create(data: CreateEquipmentLoanRequest): Promise<EquipmentLoanDTO> {
