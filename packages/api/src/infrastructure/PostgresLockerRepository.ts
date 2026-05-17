@@ -1,6 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { LockerStatus, PrismaClient } from '../generated/client/client.js';
-import { CreateLockerRequest, LockerDTO } from '@alentapp/shared';
+import { CreateLockerRequest, LockerDTO, MemberDTO } from '@alentapp/shared';
 import { LockerRepository } from '../domain/LockerRepository.js';
 
 if (!process.env.DATABASE_URL) {
@@ -17,6 +17,18 @@ type DBLocker = {
     location: string;
     status: LockerStatus;
     member_id: string | null;
+    member?: DBMember | null;
+};
+
+type DBMember = {
+    id: string;
+    dni: string;
+    name: string;
+    email: string;
+    birthdate: Date | null;
+    category: MemberDTO['category'];
+    status: MemberDTO['status'];
+    created_at: Date;
 };
 
 export class PostgresLockerRepository implements LockerRepository {
@@ -54,6 +66,17 @@ export class PostgresLockerRepository implements LockerRepository {
         return locker ? this.mapToDTO(locker) : null;
     }
 
+    async findAll(): Promise<LockerDTO[]> {
+        const lockers = await prisma.locker.findMany({
+            orderBy: {number: 'asc'},
+            include: {
+                member: true,
+            },
+        })
+
+        return lockers.map((locker) => this.mapToDTO(locker));
+    }
+
 
     private mapToDTO(locker: DBLocker): LockerDTO {
         return {
@@ -62,6 +85,20 @@ export class PostgresLockerRepository implements LockerRepository {
             location: locker.location,
             status: locker.status,
             member_id: locker.member_id ?? undefined,
+            member: locker.member ? this.mapMemberToDTO(locker.member) : undefined,
+        };
+    }
+
+    private mapMemberToDTO(member: DBMember): MemberDTO {
+        return {
+            id: member.id,
+            dni: member.dni,
+            name: member.name,
+            email: member.email,
+            birthdate: member.birthdate ? member.birthdate.toISOString().split('T')[0] : '',
+            category: member.category,
+            status: member.status,
+            created_at: member.created_at.toISOString(),
         };
     }
 }
