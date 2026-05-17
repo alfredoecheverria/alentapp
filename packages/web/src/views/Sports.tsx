@@ -104,7 +104,7 @@ export function SportsView() {
   };
 
   const handleDeleteSport = async (id: string, name: string) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar al deporte "${name}"? Esta acción no se puede deshacer.`)) {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar al deporte "${name}"? Esta acción eliminara las inscripciones de los socios y no se puede deshacer.`)) {
       try {
         await sportsService.delete(id);
         fetchSports(); // Refresh the list
