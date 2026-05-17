@@ -16,7 +16,7 @@ Digitalizar el registro de sanciones disciplinarias aplicadas a socios. Una sanc
 
 ### User Persona
 
-- Nombre: Maria (Equipo de Disciplina).
+- Nombre: Maria (Administrativo).
 - Necesidad: Registrar sanciones asegurándose de que el sistema bloquee automáticamente al socio durante el período establecido.
 
 ### Criterios de Aceptación
@@ -54,19 +54,20 @@ Se definirá la entidad `Discipline` con las siguientes propiedades y restriccio
 - `end_date`: Fecha y hora de finalización de la sanción.
 - `is_total_suspension`: Valor booleano que indica si la sanción bloquea completamente al socio.
 - `member_id`: Identificador del socio sancionado (UUID, clave foránea hacia `Member`).
+- `deactivated_at`: DateTime | null (gestionado internamente por el sistema, se inicializa en null.)
 
 ### Contrato de API (@alentapp/shared)
 
-- Endpoint: `POST /api/v1/discipline`
+- Endpoint: `POST /api/v1/disciplines`
 - Request Body (CreateDisciplineRequest):
 
 ```ts
 {
-    memberId: string;
+    member_id: string;
     reason: string;
-    startDate: string;
-    endDate: string;
-    isTotalSuspension: boolean;
+    start_date: string;
+    end_date: string;
+    is_total_suspension: boolean;
 }
 ```
 
@@ -83,12 +84,13 @@ Se definirá la entidad `Discipline` con las siguientes propiedades y restriccio
 | Escenario                         | Resultado Esperado                                 | Código HTTP   |
 | --------------------------------- | -------------------------------------------------- | ------------- |
 | Socio inexistente                 | Mensaje: "El socio indicado no existe"             | 404 Not Found |
-| Fecha fin anterior a fecha inicio | Mensaje: "Fecha de inicio posterior a fecha de fin"| 400 Bad Request |
+| Fecha fin anterior a fecha inicio | Mensaje: "La fecha de finalización debe ser posterior a la fecha de inicio"| 400 Bad Request |
 | Error de conexión a DB            | Mensaje: "Error interno, reintente más tarde"      | 500 Internal Server Error |
+| Registro exitoso                  | Mensaje: "Sanción creada correctamente"            | 201 Created   |
 
 ## Plan de Implementación
 
 1. Definir esquema de persistencia y correr migración: crear la tabla Discipline con sus relaciones hacia Member y los campos correspondientes.
 2. Crear tipos en shared y puerto en el Dominio.
-3. Implementar el repositorio y el caso de uso:desarrollar la lógica de negocio para verificar que el socio exista, validar que todos los campos obligatorios estén presentes, comprobar que la fecha de finalización sea posterior a la fecha de inicio y persistir la sanción en la base de datos.
-4. Crear formulario en React y conectar con el endpoint del backend: desarrollar la interfaz para que el equipo de Disciplina registre sanciones, enviando los datos al endpoint correspondiente (POST /api/v1/discipline) y mostrando mensajes claros ante operaciones exitosas o errores de validación.
+3. Implementar el repositorio y el caso de uso: desarrollar la lógica de negocio para verificar que el socio exista, validar que todos los campos obligatorios estén presentes, comprobar que la fecha de finalización sea posterior a la fecha de inicio y persistir la sanción en la base de datos.
+4. Crear formulario en React y conectar con el endpoint del backend: desarrollar la interfaz para que el equipo de Disciplina registre sanciones, enviando los datos al endpoint correspondiente (POST /api/v1/disciplines) y mostrando mensajes claros ante operaciones exitosas o errores de validación.

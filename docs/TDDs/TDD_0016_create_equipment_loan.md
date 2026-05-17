@@ -42,7 +42,7 @@ Se definira la entidad `Equipment_Loan` con las siguientes propiedades:
 
 ### Contrato de API (@alentapp/shared)
 [Definición de endpoints y tipos compartidos.]
-- Endpoint: `POST /api/v1/equipment_loan`
+- Endpoint: `POST /api/v1/equipment-loans`
 - Request Body (CreateEquipmentLoanRequest):
 ```ts
 {

@@ -52,10 +52,11 @@ Se definirá la entidad `Locker` con las siguientes propiedades y restricciones:
 ```
 
 ### Componentes de Arquitectura Hexagonal
-1. Puerto: LockerRepository (Interface en el Dominio).
-2. Caso de Uso: CreateLocker (Lógica que verifica si ya existe un Locker con ese numero).
-3. Adaptador de Salida: DB persistence adapter (Implementación real en BD).
-4. Adaptador de Entrada: LockerController (Ruta HTTP).
+1. **Puerto**: `LockerRepository` (Interface en el Dominio).
+2. **Servicio de Dominio**: `LockerValidator` (Valida `number`, `member_id` y combinaciones válidas de `status`/`member_id`).
+3. **Caso de Uso**: `CreateLocker` (Lógica que verifica si ya existe un locker con ese número).
+4. **Adaptador de Salida**: `PostgresLockerRepository` (Persistencia usando Prisma).
+5. **Adaptador de Entrada**: `LockerController` (Ruta HTTP).
 
 ## Casos de Borde y Errores
 | Escenario                                  | Resultado Esperado                                          | Código HTTP               |
@@ -71,7 +72,9 @@ Se definirá la entidad `Locker` con las siguientes propiedades y restricciones:
 | Error de conexión a DB                     | Mensaje: "Error interno, reintente más tarde"               | 500 Internal Server Error |
 
 ## Plan de Implementación
-1. Definir esquema de persistencia, incluir constraint `UNIQUE` para `number` y correr migración.
-2. Crear tipos en shared y puerto en el Dominio.
-3. Implementar el repositorio y el caso de uso.
-4. Crear formulario en React y conectar con el endpoint del backend.
+1. Actualizar/añadir tipos en `@alentapp/shared` (`CreateLockerRequest`).
+2. Crear `LockerValidator` en el dominio (valida tipo/rango de `number`, formato y existencia de `member_id`, y reglas de combinación `status`/`member_id`).
+3. Implementar el `LockerRepository` con el metodo `create`
+4. Implementar `CreateLockerUseCase` que use `LockerValidator` y el repositorio para la lógica de creación.
+5. Crear la ruta `POST` en el controlador y enlazarla a la app de Fastify.
+6. Consumir el endpoint desde el servicio de Frontend y crear modal en el frontend para la creación de lockers.

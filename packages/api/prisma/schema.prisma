@@ -40,6 +40,9 @@ model Member {
     category   MemberCategory
     status     MemberStatus   @default(Activo)
     created_at DateTime       @default(now())
+    lockers    Locker[]
+
+    disciplines Discipline[] // Un socio puede tener muchas sanciones
 
     equipment_loans Equipment_loan[]
 
@@ -59,4 +62,45 @@ model Equipment_loan {
     member Member @relation(fields: [member_id], references: [id])
 
     @@map("equipment_loan")
+}
+model Sport {
+    id                              String         @id @default(uuid())
+    name                            String         @unique
+    description                     String
+    max_capacity                    Int
+    additional_price                Float
+    requires_medical_certificate    Boolean
+
+    @@map("sports")
+}
+    
+enum LockerStatus {
+    Available
+    Occupied
+    Maintenance
+}
+
+model Locker {
+    id         String        @id @default(uuid())
+    number     Int           @unique
+    location   String
+    status     LockerStatus  @default(Available)
+    member_id  String? 
+    member     Member?       @relation(fields: [member_id], references: [id])
+
+    @@map("lockers")
+}
+
+model Discipline {
+  id                    String    @id @default(uuid())
+  reason                String
+  start_date            DateTime
+  end_date              DateTime
+  is_total_suspension   Boolean
+  deactivated_at        DateTime?
+
+  member_id String
+  member    Member @relation(fields: [member_id], references: [id])
+
+  @@map("disciplines") // Para que en la DB la tabla se llame 'disciplines' en minúscula
 }

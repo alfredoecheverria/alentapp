@@ -16,7 +16,7 @@ Permitir al equipo de disciplina modificar una sanción existente para corregir 
 
 ### User Persona
 
-- Nombre: Maria (Equipo de Disciplina).
+- Nombre: Maria (Administrativo).
 - Necesidad: Editar una sanción previamente registrada, por ejemplo, corregir las fechas de suspensión, actualizar el motivo o cambiar una suspensión parcial a total.
 
 ### Criterios de Aceptación
@@ -49,12 +49,13 @@ La operación actuará sobre la entidad `Discipline` existente, que posee las si
 - `end_date`: Fecha y hora de finalización de la sanción.
 - `is_total_suspension`: Valor booleano que indica si la sanción bloquea completamente al socio.
 - `member_id`: Identificador del socio sancionado (UUID, clave foránea hacia `Member`).
+- `deactivated_at`: DateTime | null (gestionado internamente por el sistema, se inicializa en null.)
 
 ### Contrato de API (@alentapp/shared)
 
 Se utilizará el paquete compartido para definir el cuerpo de la petición. Todos los campos son opcionales ya que se trata de una actualización parcial.
 
-- Endpoint: `PATCH /api/v1/discipline/:id`
+- Endpoint: `PUT /api/v1/disciplines/:id`
 - Request Body (`UpdateDisciplineRequest`):
 
 ```ts
@@ -63,7 +64,6 @@ Se utilizará el paquete compartido para definir el cuerpo de la petición. Todo
     start_date?: string;
     end_date?: string;
     is_total_suspension?: boolean;
-    member_id?: string;
 }
 ```
 
@@ -79,11 +79,11 @@ Se utilizará el paquete compartido para definir el cuerpo de la petición. Todo
 | Escenario                  | Resultado Esperado                           | Código HTTP                |
 | ---------------------------|----------------------------------------------| ---------------------------|
 | Sancion inexistente        | Mensaje: "La sancion indicada no existe"     | 404 Not Found              |
-| Socio inexistente          | Mensaje: "El socio indicado no existe"       | 404 Not Found              |
 | Fecha fin anterior a fecha inicio| Mensaje: "La fecha de fin debe ser posterior a la fecha de inicio" | 400 Bad Request |
 | Sin campos para actualizar | Mensaje: "Debe indicar al menos un campo a modificar" | 400 Bad Request   |
 | Error de conexión a DB     | Mensaje: "Error interno, reintente más tarde"| 500 Internal Server Error  |
 | Actualizacion exitosa      | Retorna la sancion actualizada               | 200 OK                     |
+| La sanción tiene deactivated_at distinto de null | Mensaje: "No se puede actualizar una sanción que ya fue finalizada" | 409 Conflict |
 
 ## Plan de Implementación
 

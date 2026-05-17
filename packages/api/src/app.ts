@@ -12,16 +12,30 @@ import { EquipmentLoanValidator } from './domain/services/EquipmentLoanValidator
 import { CreateEquipmentLoanUseCase } from './application/CreateEquipmentLoanUseCase.js';
 import { EquipmentLoanController } from './delivery/EquipmentLoanController.js';
 
+import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.ts'
+import { SportValidator } from './domain/services/SportValidator.ts'
+import { CreateSportUseCase } from './application/CreateSportUseCase.ts'
+import { GetSportsUseCase } from './application/GetSportsUseCase.ts'
+import { SportController } from './delivery/SportController.ts'
+import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
+import { LockerValidator } from './domain/services/LockerValidator.js';
+import { CreateLockerUseCase } from './application/CreateLockerUseCase.js';
+import { LockerController } from './delivery/LockerController.js';
+
+import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
+import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
+import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
+import { DisciplineController } from './delivery/DisciplineController.js';
 
 export function buildApp() {
     const server = Fastify({
         logger: {
             level: 'info',
-            transport: process.env.NODE_ENV === 'development' 
+            transport: process.env.NODE_ENV === 'development'
             ? {
                 target: 'pino-pretty',
                 options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname' },
-                } 
+                }
             : undefined,
         },
     });
@@ -35,14 +49,14 @@ export function buildApp() {
 
     const memberRepo = new PostgresMemberRepository();
     const memberValidator = new MemberValidator(memberRepo);
-    
+
     const createMemberUseCase = new CreateMemberUseCase(memberRepo, memberValidator);
     const getMembersUseCase = new GetMembersUseCase(memberRepo);
     const updateMemberUseCase = new UpdateMemberUseCase(memberRepo, memberValidator);
     const deleteMemberUseCase = new DeleteMemberUseCase(memberRepo);
 
     const memberController = new MemberController(
-        createMemberUseCase, 
+        createMemberUseCase,
         getMembersUseCase,
         updateMemberUseCase,
         deleteMemberUseCase
@@ -59,12 +73,52 @@ export function buildApp() {
     );
 
 
+    const sportRepository = new PostgresSportRepository();
+    const sportValidator = new SportValidator(sportRepository);
+
+    const createSportUseCase = new CreateSportUseCase(sportRepository, sportValidator);
+    const getSportsUseCase = new GetSportsUseCase(sportRepository);
+
+    const sportController = new SportController(
+        createSportUseCase,
+        getSportsUseCase,
+    );
+
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
     server.post('/api/v1/socios', memberController.create.bind(memberController));
     server.put('/api/v1/socios/:id', memberController.update.bind(memberController));
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
 
     server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
+    server.post('/api/v1/sports', sportController.create.bind(sportController));
+    server.get('/api/v1/sports', sportController.getAll.bind(sportController));
+
+    const lockerRepository = new PostgresLockerRepository();
+    const lockerValidator = new LockerValidator(lockerRepository, memberRepo);
+    const createLockerUseCase = new CreateLockerUseCase(lockerRepository, lockerValidator);
+    const lockerController = new LockerController(
+        createLockerUseCase,
+    );
+
+    server.post('/api/v1/lockers', lockerController.create.bind(lockerController));
+
+    const disciplineRepo = new PostgresDisciplineRepository();
+    const disciplineValidator = new DisciplineValidator();
+
+    const createDisciplineUseCase = new CreateDisciplineUseCase(
+        disciplineRepo,
+        disciplineValidator,
+        memberValidator
+    );
+
+    const disciplineController = new DisciplineController(
+        createDisciplineUseCase
+    );
+
+    server.post(
+        '/api/v1/disciplines',
+        disciplineController.create.bind(disciplineController)
+    );
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
