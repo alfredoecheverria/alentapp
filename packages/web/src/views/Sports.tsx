@@ -15,7 +15,7 @@ import {
 import { LuPlus, LuPencil, LuTrash2, LuRefreshCw } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import { sportsService } from "../services/sports.ts";
-import type { SportDTO, CreateSportRequest } from "@alentapp/shared";
+import type { SportDTO, CreateSportRequest, UpdateSportRequest } from "@alentapp/shared";
 import {
   DialogRoot,
   DialogContent,
@@ -88,14 +88,14 @@ export function SportsView() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-            console.log(formData);
       if (editingSportId) {
-        console.log("Not Implemented");
+        const finalData = { max_capacity: formData.max_capacity, description: formData.description};
+        await sportsService.update(editingSportId, finalData as UpdateSportRequest);
       } else {
         await sportsService.create(formData as CreateSportRequest);
       }
       setIsDialogOpen(false);
-      //fetchSports(); // Refresh the list
+      fetchSports(); // Refresh the list
     } catch (err: any) {
       alert(err.message || "Error al guardar el deporte");
     } finally {
@@ -152,7 +152,8 @@ export function SportsView() {
                     placeholder="Ej. Kung-Fu"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
+                    disabled={editingSportId}
+                    required={!editingSportId}
                   />
                 </Field>
                 <Field label="Descripcion" required>
@@ -160,7 +161,7 @@ export function SportsView() {
                     placeholder="Ej. Arte marcial full-contact de origen chino"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    required
+                    required={!editingSportId}
                   />
                 </Field>
                 <Field label="Capacidad Máxima de Practicantes" required>
@@ -169,7 +170,7 @@ export function SportsView() {
                     placeholder="5"
                     value={formData.max_capacity}
                     onChange={(e) => setFormData({ ...formData, max_capacity: parseInt(e.target.value) })}
-                    required
+                    required={!editingSportId}
                   />
                 </Field>
                 <Field label="Coste Adicional" required>
@@ -177,12 +178,14 @@ export function SportsView() {
                                         type="number"
                     value={formData.additional_price}
                     onChange={(e) => setFormData({ ...formData, additional_price: parseFloat(e.target.value) })}
-                    required
+                    disabled={editingSportId}
+                    required={!editingSportId}
                   />
                 </Field>
                   <CheckboxRoot
                     checked={formData.requires_medical_certificate}
                     onCheckedChange={(e) => setFormData({ ...formData, requires_medical_certificate: !!e.checked})}
+                    disabled={editingSportId}
                   >
                                     <CheckboxHiddenInput />
                                     <CheckboxControl />

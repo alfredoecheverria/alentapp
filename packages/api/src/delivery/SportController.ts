@@ -1,16 +1,18 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreateSportUseCase } from '../application/CreateSportUseCase.ts'
 import { GetSportsUseCase } from '../application/GetSportsUseCase.ts'
-import { CreateSportRequest } from '@alentapp/shared'
+import { UpdateSportUseCase } from '../application/UpdateSportUseCase.ts'
+import { CreateSportRequest, UpdateSportRequest } from '@alentapp/shared'
 
 export class SportController {
     constructor(
-        private readonly createSportUseCase: CreateSportRequest,
+        private readonly createSportUseCase: CreateSportUseCase,
         private readonly getSportsUseCase: GetSportsUseCase,
+        private readonly updateSportUseCase: UpdateSportsUseCase,
     ) {}
 
     async create(
-        request: FastifyRequest<{ body: CreateSportRequest }>,
+        request: FastifyRequest<{ Body: CreateSportRequest }>,
         reply: FastifyReply
     ) {
         try {
@@ -33,6 +35,25 @@ export class SportController {
             return reply.status(200).send({ data: sports });
         } catch (error: any) {
             console.log(sports);
+            return reply.status(500).send({ error: error.message });
+        }
+    }
+
+    async update(
+        request: FastifyRequest<{ Params: { id: string }, Body: UpdateSportRequest }>,
+        reply: FastifyReply
+    ) {
+        try {
+            const { id } = request.params;
+            const sport = await this.updateSportUseCase.execute(id, request.body);
+            return reply.status(200).send({ data: sport });
+        } catch (error: any) {
+            if (error.message.includes('El deporte no existe')
+            || error.message.includes('Descripción de deporte inválida')
+            || error.message.includes('Capacidad máxima inválida')) {
+                return reply.status(400).send({ error: error.message });
+            }
+
             return reply.status(500).send({ error: error.message });
         }
     }
