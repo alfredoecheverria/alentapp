@@ -58,6 +58,19 @@ function Layout() {
                                 Lockers
                             </Text>
                         </RouterLink>
+
+                        <RouterLink to="/enrollments">
+                            <Text
+                                fontWeight="semibold"
+                                fontSize="sm"
+                                textTransform="uppercase"
+                                letterSpacing="wider"
+                                color="fg.muted"
+                                _hover={{ color: "blue.500", textDecoration: "none" }}
+                            >
+                                Inscripciones
+                            </Text>
+                        </RouterLink>
                     </HStack>
                 </Flex>
             </Box>

@@ -58,6 +58,27 @@ export interface UpdateSportRequest {
 }
 
 // ==========================================
+// Locker
+// ==========================================
+export type LockerStatus = 'Available' | 'Occupied' | 'Maintenance';
+
+export interface LockerDTO {
+  id: string; // UUID
+  number: number;
+  location: string;
+  status: LockerStatus;
+  member_id?: string;
+  member?: MemberDTO;
+}
+
+export interface CreateLockerRequest {
+  number: number;
+  location: string;
+  status?: LockerStatus;
+  member_id?: string;
+}
+
+// ==========================================
 // Discipline
 // ==========================================
 
@@ -77,27 +98,6 @@ export interface CreateDisciplineRequest {
   start_date: string; // ISO Date String
   end_date: string; // ISO Date String
   is_total_suspension: boolean;
-}
-
-// ==========================================
-// Locker
-// ==========================================
-export type LockerStatus = 'Available' | 'Occupied' | 'Maintenance';
-
-export interface LockerDTO {
-  id: string; // UUID
-  number: number;
-  location: string;
-  status: LockerStatus;
-  member_id?: string;
-  member?: MemberDTO;
-}
-
-export interface CreateLockerRequest {
-  number: number;
-  location: string;
-  status?: LockerStatus;
-  member_id?: string;
 }
 
 // ==========================================
@@ -147,4 +147,23 @@ export interface CreatePaymentRequest {
   payment_date: string;
   year: number;
   month: number;
+}
+
+// ==========================================
+// Enrollment
+// ==========================================
+
+export interface EnrollmentDTO {
+    id: string; //UUID
+    member_id: string; //UUID
+    sport_id: string; //UUID
+    enrollment_date: string; // ISO Date String
+    is_active: boolean;
+}
+
+export interface CreateEnrollmentRequest {
+    member_id: string; //UUID
+    sport_id: string; //UUID
+    enrollment_date: string; // ISO Date String
+    is_active: boolean;
 }

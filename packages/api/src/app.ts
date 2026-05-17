@@ -7,6 +7,7 @@ import { GetMembersUseCase } from './application/GetMembersUseCase.js';
 import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
+
 import { PostgresEquipmentLoanRepository } from './infrastructure/PostgresEquipmentLoanRepository.js';
 import { EquipmentLoanValidator } from './domain/services/EquipmentLoanValidator.js';
 import { GetEquipmentLoansUseCase } from './application/GetEquipmentLoanUseCase.js';
@@ -19,6 +20,12 @@ import { CreateSportUseCase } from './application/CreateSportUseCase.ts'
 import { GetSportsUseCase } from './application/GetSportsUseCase.ts'
 import { UpdateSportUseCase } from './application/UpdateSportUseCase.ts'
 import { SportController } from './delivery/SportController.ts'
+
+import { PostgresEnrollmentRepository } from './infrastructure/PostgresEnrollmentRepository.ts'
+import { EnrollmentValidator } from './domain/services/EnrollmentValidator.ts'
+import { CreateEnrollmentUseCase } from './application/CreateEnrollmentUseCase.ts'
+import { EnrollmentController } from './delivery/EnrollmentController.ts'
+
 import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
 import { LockerValidator } from './domain/services/LockerValidator.js';
 import { CreateLockerUseCase } from './application/CreateLockerUseCase.js';
@@ -73,30 +80,37 @@ export function buildApp() {
         deleteMemberUseCase
     );
 
+    server.get('/api/v1/socios', memberController.getAll.bind(memberController));
+    server.post('/api/v1/socios', memberController.create.bind(memberController));
+    server.put('/api/v1/socios/:id', memberController.update.bind(memberController));
+    server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
+
     const paymentRepo = new PostgresPaymentRepository();
     const paymentValidator = new PaymentValidator(paymentRepo, memberRepo);
 
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
     const getPaymentUseCase = new GetPaymentUseCase(paymentRepo);
-    
 
     const paymentController = new PaymentController(
         createPaymentUseCase,
         getPaymentUseCase
     );
 
+    server.post('/api/v1/payments', paymentController.create.bind(paymentController));
+    server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
 
     const equipmentLoanRepository = new PostgresEquipmentLoanRepository();
     const equipmentLoanValidator = new EquipmentLoanValidator(equipmentLoanRepository, memberRepo);
     const getEquipmentLoansUseCase = new GetEquipmentLoansUseCase(equipmentLoanRepository);
     const createEquipmentLoanUseCase = new CreateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator);
 
-    
     const equipmentLoanController = new EquipmentLoanController(
         createEquipmentLoanUseCase,
         getEquipmentLoansUseCase,
     );
 
+    server.get('/api/v1/equipment-loans', equipmentLoanController.getAll.bind(equipmentLoanController));
+    server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
 
     const sportRepository = new PostgresSportRepository();
     const sportValidator = new SportValidator(sportRepository);
@@ -111,23 +125,20 @@ export function buildApp() {
         updateSportUseCase
     );
 
-    server.get('/api/v1/socios', memberController.getAll.bind(memberController));
-    server.post('/api/v1/socios', memberController.create.bind(memberController));
-    server.put('/api/v1/socios/:id', memberController.update.bind(memberController));
-    server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
-
-    
-    server.post('/api/v1/payments', paymentController.create.bind(paymentController));
-    server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
-    
-    
-    server.get('/api/v1/equipment-loans', equipmentLoanController.getAll.bind(equipmentLoanController));
-    server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
-
-    
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
     server.put('/api/v1/sports/:id', sportController.update.bind(sportController));
+
+    const enrollmentRepository = new PostgresEnrollmentRepository();
+    const enrollmentValidator = new EnrollmentValidator(enrollmentRepository, sportRepository);
+
+    const createEnrollmentUseCase = new CreateEnrollmentUseCase(enrollmentRepository, enrollmentValidator);
+
+    const enrollmentController = new EnrollmentController(
+        createEnrollmentUseCase,
+    );
+
+    server.post('/api/v1/enrollments', enrollmentController.create.bind(enrollmentController));
 
     const lockerRepository = new PostgresLockerRepository();
     const lockerValidator = new LockerValidator(lockerRepository, memberRepo);
