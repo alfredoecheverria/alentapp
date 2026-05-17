@@ -17,6 +17,11 @@ import { LockerValidator } from './domain/services/LockerValidator.js';
 import { CreateLockerUseCase } from './application/CreateLockerUseCase.js';
 import { LockerController } from './delivery/LockerController.js';
 
+import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
+import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
+import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
+import { DisciplineController } from './delivery/DisciplineController.js';
+
 export function buildApp() {
     const server = Fastify({
         logger: {
@@ -79,6 +84,24 @@ export function buildApp() {
     );
 
     server.post('/api/v1/lockers', lockerController.create.bind(lockerController));
+
+    const disciplineRepo = new PostgresDisciplineRepository();
+    const disciplineValidator = new DisciplineValidator();
+
+    const createDisciplineUseCase = new CreateDisciplineUseCase(
+        disciplineRepo,
+        disciplineValidator,
+        memberValidator
+    );
+
+    const disciplineController = new DisciplineController(
+        createDisciplineUseCase
+    );
+
+    server.post(
+        '/api/v1/disciplines',
+        disciplineController.create.bind(disciplineController)
+    );
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
