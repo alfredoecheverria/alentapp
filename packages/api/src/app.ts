@@ -7,11 +7,13 @@ import { GetMembersUseCase } from './application/GetMembersUseCase.js';
 import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
+
 import { PostgresEquipmentLoanRepository } from './infrastructure/PostgresEquipmentLoanRepository.js';
 import { EquipmentLoanValidator } from './domain/services/EquipmentLoanValidator.js';
 import { GetEquipmentLoansUseCase } from './application/GetEquipmentLoanUseCase.js';
 import { CreateEquipmentLoanUseCase } from './application/CreateEquipmentLoanUseCase.js';
 import { EquipmentLoanController } from './delivery/EquipmentLoanController.js';
+import { UpdateEquipmentLoanUseCase } from './application/UpdateEquipmentLoanUseCase.js';
 
 import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.ts'
 import { SportValidator } from './domain/services/SportValidator.ts'
@@ -89,11 +91,12 @@ export function buildApp() {
     const equipmentLoanValidator = new EquipmentLoanValidator(equipmentLoanRepository, memberRepo);
     const getEquipmentLoansUseCase = new GetEquipmentLoansUseCase(equipmentLoanRepository);
     const createEquipmentLoanUseCase = new CreateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator);
-
+    const updateEquipmentLoanUseCase = new UpdateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator); 
     
     const equipmentLoanController = new EquipmentLoanController(
         createEquipmentLoanUseCase,
         getEquipmentLoansUseCase,
+        updateEquipmentLoanUseCase
     );
 
 
@@ -120,7 +123,7 @@ export function buildApp() {
     
     server.get('/api/v1/equipment-loans', equipmentLoanController.getAll.bind(equipmentLoanController));
     server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
-
+    server.put('/api/v1/equipment-loans/:id', equipmentLoanController.update.bind(equipmentLoanController));
     
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
