@@ -15,8 +15,8 @@ import {
 import { LuPlus, LuPencil, LuTrash2, LuRefreshCw } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import { equipmentLoansService } from "../services/equipment-loans.ts";
-import { membersService } from "../services/members.ts"; // Para cargar los socios en el select
-import type { EquipmentLoanDTO, CreateEquipmentLoanRequest, MemberDTO } from "@alentapp/shared";
+import { membersService } from "../services/members.ts";
+import type { CreateEquipmentLoanRequest, UpdateEquipmentLoanRequest, EquipmentLoanDTO, MemberDTO } from "@alentapp/shared";
 import {
   DialogRoot,
   DialogContent,
@@ -40,7 +40,7 @@ export function EquipmentLoansView() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingLoanId, setEditingLoanId] = useState<string | null>(null);
 
-  // Estado del Formulario alineado con shared en snake_case
+  // Estado del Formulario
   const [formData, setFormData] = useState<CreateEquipmentLoanRequest>({
     item_name: "",
     status: "Loaned",
@@ -79,12 +79,24 @@ export function EquipmentLoansView() {
     setIsDialogOpen(true);
   };
 
+  const openEditModal = (loan: EquipmentLoanDTO) => {
+    setEditingLoanId(loan.id);
+    setFormData({
+      item_name: loan.item_name,
+      status: loan.status,
+      loan_date: loan.loan_date,
+      due_date: loan.due_date,
+      member_id: loan.member_id,
+    });
+    setIsDialogOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       if (editingLoanId) {
-        console.log("Edición no implementada aún en el backend");
+        await equipmentLoansService.update(editingLoanId, formData as UpdateEquipmentLoanRequest);
       } else {
         await equipmentLoansService.create(formData);
       }
@@ -101,7 +113,6 @@ export function EquipmentLoansView() {
     fetchData();
   }, []);
 
-  // Función auxiliar para buscar el nombre del socio asociado a un préstamo
   const getMemberName = (memberId: string) => {
     const member = members.find((m) => m.id === memberId);
     return member ? member.name : "Socio no encontrado";
@@ -127,7 +138,6 @@ export function EquipmentLoansView() {
           </HStack>
         </Flex>
 
-        {/* Modal de Registro */}
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
@@ -136,7 +146,6 @@ export function EquipmentLoansView() {
             <DialogBody>
               <Stack gap="4">
                 
-                {/* Selector Desplegable de Socios */}
                 <Field label="Socio / Miembro" required>
                   <select
                     style={{
@@ -144,7 +153,8 @@ export function EquipmentLoansView() {
                       padding: "8px 12px",
                       borderRadius: "6px",
                       border: "1px solid #3a3a3a",
-                      background: "#18181b"
+                      background: "#18181b",
+                      color: "white"
                     }}
                     value={formData.member_id}
                     onChange={(e) => setFormData({ ...formData, member_id: e.target.value })}
@@ -167,6 +177,28 @@ export function EquipmentLoansView() {
                     required
                   />
                 </Field>
+
+                {editingLoanId && (
+                  <Field label="Estado del Préstamo" required>
+                    <select
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        borderRadius: "6px",
+                        border: "1px solid #3a3a3a",
+                        background: "#18181b",
+                        color: "white"
+                      }}
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      required
+                    >
+                      <option value="Loaned">Prestado</option>
+                      <option value="Returned">Devuelto</option>
+                      <option value="Damaged">Dañado</option>
+                    </select>
+                  </Field>
+                )}
 
                 <Field label="Fecha de Préstamo" required>
                   <Input
@@ -206,7 +238,7 @@ export function EquipmentLoansView() {
           </Box>
         )}
 
-        {/* Tabla Desplegable con Chakra UI */}
+        {/* Tabla con Chakra UI */}
         <Box
           bg="bg.panel"
           borderRadius="xl"
@@ -265,7 +297,12 @@ export function EquipmentLoansView() {
                      </Table.Cell>
                      <Table.Cell textAlign="right">
                        <HStack gap="2" justify="flex-end">
-                         <IconButton size="xs" variant="ghost" aria-label="Editar">
+                         <IconButton 
+                           size="xs" 
+                           variant="ghost" 
+                           aria-label="Editar"
+                           onClick={() => openEditModal(loan)}
+                         >
                            <LuPencil />
                          </IconButton>
                          <IconButton size="xs" variant="ghost" colorPalette="red" aria-label="Eliminar">
