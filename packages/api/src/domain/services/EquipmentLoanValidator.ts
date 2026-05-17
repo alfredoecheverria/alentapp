@@ -7,6 +7,13 @@ export class EquipmentLoanValidator {
         private readonly memberRepo: MemberRepository
     ) {}
 
+    async validateLoanExists(loanId: string): Promise<void> {
+        const loanExists = await this.equipmentLoanRepo.findById(loanId);
+        
+        if (!loanExists) {
+            throw new Error('El préstamo de equipamiento solicitado no existe');
+        }
+    }
 
     async validateLoanMemberExists(memberId: string): Promise<void> {
         
