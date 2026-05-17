@@ -44,7 +44,6 @@ export function PaymentsView() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Estado inicial del formulario
   const [formData, setFormData] = useState<CreatePaymentRequest>({
     amount: 0,
     due_date: "",
@@ -56,7 +55,6 @@ export function PaymentsView() {
   });
 
   const openCreateModal = () => {
-    // Resetear form al abrir
     setFormData({ 
       amount: 0, 
       due_date: "", 
@@ -73,7 +71,6 @@ export function PaymentsView() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // Única llamada al servicio permitida: CREATE
       await paymentsService.create(formData);
       setIsDialogOpen(false);
       alert("¡Pago registrado con éxito!");
@@ -91,18 +88,16 @@ export function PaymentsView() {
           <Stack gap="1">
             <Heading size="2xl" fontWeight="bold">Administración de Pagos</Heading>
             <Text color="fg.muted" fontSize="md">
-              Módulo de Registro de Pagos (Feature: Create).
+              Módulo de Registro de Pagos.
             </Text>
           </Stack>
           <HStack gap="3">
-            {/* Botón único de acción */}
             <Button colorPalette="blue" size="md" onClick={openCreateModal}>
               <LuPlus /> Registrar Nuevo Pago
             </Button>
           </HStack>
         </Flex>
 
-        {/* Placeholder visual para la futura lista (Read) */}
         <Box 
           p="20" 
           border="2px dashed" 
@@ -112,7 +107,7 @@ export function PaymentsView() {
           textAlign="center"
         >
           <Text color="fg.muted" fontWeight="medium">
-            La visualización de pagos se implementará en la siguiente etapa (Feature: Read).
+            No hay pagos registrados aún. Haz clic en "Registrar Nuevo Pago" para comenzar.
           </Text>
         </Box>
 
