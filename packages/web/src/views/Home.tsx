@@ -31,6 +31,13 @@ export function HomeView() {
           icon={LuUsers}
         />
 
+        <SectionCard 
+          title="Prestamos de Equipamiento"
+          description="Administra el padrón de socios, sus categorías, estados de cuenta y datos personales."
+          to="/equipment-loans"
+          icon={LuUsers}
+        />
+
         {/* Future sections can be added here following the same pattern */}
         <Box 
           p="6" 
