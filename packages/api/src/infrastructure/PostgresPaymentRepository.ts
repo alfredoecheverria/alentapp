@@ -42,12 +42,22 @@ export class PostgresPaymentRepository implements PaymentRepository {
         return this.mapToDTO(payment);
     }
 
+    findAll(): Promise<PaymentDTO[]> {
+        return prisma.payment.findMany({
+        }).then(payments => payments.map(this.mapToDTO));
+    }
+
+    findById(id: string): Promise<PaymentDTO | null> {
+        return prisma.payment.findUnique({
+            where: { id },
+        }).then(payment => payment ? this.mapToDTO(payment) : null);
+    }
+
     findByMemberId(member_id: string): Promise<PaymentDTO[]> {
         return prisma.payment.findMany({
             where: { member_id }
         }).then(payments => payments.map(this.mapToDTO));
     }
-
 
     private mapToDTO(payment: DBPayment): PaymentDTO {
         return {
