@@ -38,10 +38,13 @@ export let router = createBrowserRouter([
         Component: DisciplinesView,
       },
       {
+        path: "/enrollments",
+        Component: EnrollmentsView,
+      },
+      {
         path: "/equipment-loans",
         Component: EquipmentLoansView,
       },
-      
     ],
   },
 ]);
