@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/client/client.js';
 import { EquipmentLoanRepository } from '../domain/EquipmentLoanRepository.js';
-import { EquipmentLoanDTO, CreateEquipmentLoanRequest } from '@alentapp/shared';
+import { EquipmentLoanDTO, CreateEquipmentLoanRequest, UpdateEquipmentLoanRequest} from '@alentapp/shared';
 
 
 if (!process.env.DATABASE_URL) {
@@ -41,7 +41,6 @@ export class PostgresEquipmentLoanRepository implements EquipmentLoanRepository 
            where: { id },
        });
 
-
        return equipmentLoan ? this.mapToDTO(equipmentLoan as any) : null;
    }
 
@@ -51,6 +50,21 @@ export class PostgresEquipmentLoanRepository implements EquipmentLoanRepository 
 
 
        return equipmentLoans.map((loan) => this.mapToDTO(loan as any));
+   }
+
+   async update(id: string, data: UpdateEquipmentLoanRequest): Promise<EquipmentLoanDTO> {
+       const equipmentLoan = await prisma.equipment_loan.update({
+           where: { id: id },
+           data: {
+               item_name: data.item_name,
+               status: data.status,
+               loan_date: data.loan_date ? new Date(data.loan_date) : undefined,
+               due_date: data.due_date ? new Date(data.due_date) : undefined,
+               member_id: data.member_id,
+           },
+       });
+
+       return this.mapToDTO(equipmentLoan as any);
    }
 
     private mapToDTO(equipmentLoan: DBEquipmentLoan): EquipmentLoanDTO {

@@ -80,6 +80,14 @@ export interface CreateEquipmentLoanRequest {
   member_id: string;
 }
 
+export interface UpdateEquipmentLoanRequest {
+  item_name?: string;
+  status?: EquipmentLoanStatus;
+  loan_date?: string; // ISO Date String (YYYY-MM-DD)
+  due_date?: string; // ISO Date String (YYYY-MM-DD)
+  member_id?: string;
+}
+
 // ==========================================
 // Sport
 // ==========================================
