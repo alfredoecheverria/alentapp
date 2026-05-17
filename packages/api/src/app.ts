@@ -119,7 +119,7 @@ export function buildApp() {
     const createSportUseCase = new CreateSportUseCase(sportRepository, sportValidator);
     const getSportsUseCase = new GetSportsUseCase(sportRepository);
     const updateSportUseCase = new UpdateSportUseCase(sportRepository, sportValidator);
-    const deleteSportUseCase = new DeleteSportUseCase(sportRepository);
+    const deleteSportUseCase = new DeleteSportUseCase(sportRepository, sportValidator);
 
     const sportController = new SportController(
         createSportUseCase,

@@ -1,16 +1,16 @@
 import { SportRepository } from '../domain/SportRepository.ts';
 
 export class DeleteSportUseCase {
-    constructor(private readonly sportRepo: SportRepository) {}
+    constructor(
+        private readonly sportRepo: SportRepository,
+        private readonly sportValidator: SportValidator
+    ) {}
 
     async execute(id: string): Promise<void> {
-        // Validar existencia del miembro
-        const existingSport = await this.sportRepo.findById(id);
-        if (!existingSport) {
-            throw new Error('El deporte no existe');
-        }
+        // 1. Validar existencia del deporte
+        await this.sportValidator.validateSportExists(id);
 
-        // Ejecutar eliminación
+        // 2. Ejecuta la eliminación
         await this.sportRepo.delete(id);
     }
 }
