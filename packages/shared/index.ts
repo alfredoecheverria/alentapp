@@ -78,6 +78,13 @@ export interface CreateLockerRequest {
   member_id?: string;
 }
 
+export interface UpdateLockerRequest {
+  number?: number;
+  location?: string;
+  status?: LockerStatus;
+  member_id?: string | null;
+}
+
 // ==========================================
 // Discipline
 // ==========================================
