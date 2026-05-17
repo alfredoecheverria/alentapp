@@ -24,7 +24,8 @@ export let router = createBrowserRouter([
       {
         path: "/payments",
         Component: PaymentsView,
-      }
+      },
+      {
         path: "/sports",
         Component: SportsView,
       },
