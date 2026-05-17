@@ -97,6 +97,18 @@ export function EquipmentLoansView() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    const confirmDelete = window.confirm("Estas seguro de que deseas eliminar este registro de prestamo?");
+    if (!confirmDelete) return;
+
+    try {
+      await equipmentLoansService.delete(id);
+      fetchData(); // Refrescar la tabla al toque
+    } catch (err: any) {
+      alert(err.message || "Error al eliminar el préstamo");
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -236,46 +248,51 @@ export function EquipmentLoansView() {
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-               {loans.length === 0 ? (
-                 <Table.Row>
-                   <Table.Cell colSpan={6} textAlign="center" py="8" color="fg.muted">
-                     No hay préstamos registrados actualmente.
-                   </Table.Cell>
-                 </Table.Row>
-               ) : (
-                 loans.map((loan) => (
-                   <Table.Row key={loan.id} _hover={{ bg: "bg.subtle" }}>
-                     <Table.Cell fontWeight="medium">{getMemberName(loan.member_id)}</Table.Cell>
-                     <Table.Cell>{loan.item_name}</Table.Cell>
-                     <Table.Cell>{loan.loan_date}</Table.Cell>
-                     <Table.Cell>{loan.due_date}</Table.Cell>
-                     <Table.Cell>
-                       <Box
-                         as="span"
-                         px="2"
-                         py="1"
-                         borderRadius="md"
-                         fontSize="xs"
-                         fontWeight="bold"
-                         bg={loan.status === "Loaned" ? "orange.100" : loan.status === "Returned" ? "green.100" : "red.100"}
-                         color={loan.status === "Loaned" ? "orange.800" : loan.status === "Returned" ? "green.800" : "red.800"}
-                       >
-                         {loan.status === "Loaned" ? "Prestado" : loan.status === "Returned" ? "Devuelto" : "Dañado"}
-                       </Box>
-                     </Table.Cell>
-                     <Table.Cell textAlign="right">
-                       <HStack gap="2" justify="flex-end">
-                         <IconButton size="xs" variant="ghost" aria-label="Editar">
-                           <LuPencil />
-                         </IconButton>
-                         <IconButton size="xs" variant="ghost" colorPalette="red" aria-label="Eliminar">
-                           <LuTrash2 />
-                         </IconButton>
-                       </HStack>
-                     </Table.Cell>
-                   </Table.Row>
-                 ))
-               )}
+                {loans.length === 0 ? (
+                  <Table.Row>
+                    <Table.Cell colSpan={6} textAlign="center" py="8" color="fg.muted">
+                      No hay préstamos registrados actualmente.
+                    </Table.Cell>
+                  </Table.Row>
+                ) : (
+                  loans.map((loan) => (
+                    <Table.Row key={loan.id} _hover={{ bg: "bg.subtle" }}>
+                      <Table.Cell fontWeight="medium">{getMemberName(loan.member_id)}</Table.Cell>
+                      <Table.Cell>{loan.item_name}</Table.Cell>
+                      <Table.Cell>{loan.loan_date}</Table.Cell>
+                      <Table.Cell>{loan.due_date}</Table.Cell>
+                      <Table.Cell>
+                        <Box
+                          as="span"
+                          px="2"
+                          py="1"
+                          borderRadius="md"
+                          fontSize="xs"
+                          fontWeight="bold"
+                          bg={loan.status === "Loaned" ? "orange.100" : loan.status === "Returned" ? "green.100" : "red.100"}
+                          color={loan.status === "Loaned" ? "orange.800" : loan.status === "Returned" ? "green.800" : "red.800"}
+                        >
+                          {loan.status === "Loaned" ? "Prestado" : loan.status === "Returned" ? "Devuelto" : "Dañado"}
+                        </Box>
+                      </Table.Cell>
+                      <Table.Cell textAlign="right">
+                        <HStack gap="2" justify="flex-end">
+                          <IconButton size="xs" variant="ghost" aria-label="Editar">
+                            <LuPencil />
+                          </IconButton>
+                          <IconButton 
+                            size="xs" 
+                            variant="ghost" 
+                            colorPalette="red" 
+                            aria-label="Eliminar" 
+                            onClick={() => handleDelete(loan.id)}>
+                            <LuTrash2 />
+                          </IconButton>
+                        </HStack>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))
+                )}
              </Table.Body>
             </Table.Root>
           )}
