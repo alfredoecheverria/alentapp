@@ -2,11 +2,13 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateLockerUseCase } from '../application/CreateLockerUseCase.js';
 import { CreateLockerRequest } from '@alentapp/shared';
 import { GetLockersUseCase } from '../application/GetLockersUseCase.js';
+import { DeleteLockerUseCase } from '../application/DeleteLockerUseCase.js';
 
 export class LockerController {
     constructor(
         private readonly createLockerUseCase: CreateLockerUseCase,
         private readonly getLockersUseCase: GetLockersUseCase,
+        private readonly deleteLockerUseCase: DeleteLockerUseCase,
     ) {
 
     }
@@ -58,4 +60,27 @@ export class LockerController {
                 return reply.status(500).send({ error: error.message });
             }
         }
+
+     async delete(
+        request: FastifyRequest<{ Params: { id: string } }>,
+        reply: FastifyReply,
+    ) {
+        try {
+            const { id } = request.params;
+            await this.deleteLockerUseCase.execute(id);
+            return reply.status(204).send(); // No Content
+        } catch (error: any) {
+            const msg = (error && error.message) ? String(error.message) : '';
+
+            if (msg === 'El locker no existe') {
+                return reply.status(404).send({ error: msg });
+            }
+
+            if (msg === 'No se puede eliminar un locker con member asignado') {
+                return reply.status(422).send({ error: msg });
+            }
+
+            return reply.status(500).send({ error: 'Error interno, reintente más tarde' });
+        }
+    }    
 }

@@ -28,11 +28,14 @@ import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
 import { DisciplineController } from './delivery/DisciplineController.js';
 import { GetLockersUseCase } from './application/GetLockersUseCase.js';
+import { DeleteLockerUseCase } from './application/DeleteLockerUseCase.js';
 
 import { PostgresPaymentRepository } from './infrastructure/PostgresPaymentRepository.js';
 import { PaymentValidator } from './domain/services/PaymentValidator.js';
 import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
 import { PaymentController } from './delivery/PaymentController.js';
+import { GetPaymentUseCase } from './application/GetPaymentUseCase.js';
+
 
 export function buildApp() {
     const server = Fastify({
@@ -70,13 +73,15 @@ export function buildApp() {
     );
 
     const paymentRepo = new PostgresPaymentRepository();
-    const paymentValidator = new PaymentValidator(paymentRepo);
+    const paymentValidator = new PaymentValidator(paymentRepo, memberRepo);
 
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
+    const getPaymentUseCase = new GetPaymentUseCase(paymentRepo);
     
 
     const paymentController = new PaymentController(
-        createPaymentUseCase
+        createPaymentUseCase,
+        getPaymentUseCase
     );
 
 
@@ -110,6 +115,7 @@ export function buildApp() {
 
     
     server.post('/api/v1/payments', paymentController.create.bind(paymentController));
+    server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
     
     
     server.get('/api/v1/equipment-loans', equipmentLoanController.getAll.bind(equipmentLoanController));
@@ -122,14 +128,17 @@ export function buildApp() {
     const lockerRepository = new PostgresLockerRepository();
     const lockerValidator = new LockerValidator(lockerRepository, memberRepo);
     const createLockerUseCase = new CreateLockerUseCase(lockerRepository, lockerValidator);
-    const getLockersUseCase = new GetLockersUseCase(lockerRepository)
+    const getLockersUseCase = new GetLockersUseCase(lockerRepository);
+    const deleteLockerUseCase = new DeleteLockerUseCase(lockerRepository, lockerValidator);
     const lockerController = new LockerController(
         createLockerUseCase,
-        getLockersUseCase
+        getLockersUseCase,
+        deleteLockerUseCase,
     );
 
     server.post('/api/v1/lockers', lockerController.create.bind(lockerController));
     server.get('/api/v1/lockers', lockerController.getAll.bind(lockerController));
+    server.delete('/api/v1/lockers/:id', lockerController.delete.bind(lockerController));
 
     const disciplineRepo = new PostgresDisciplineRepository();
     const disciplineValidator = new DisciplineValidator();
