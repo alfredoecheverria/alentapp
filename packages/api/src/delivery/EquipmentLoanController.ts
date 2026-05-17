@@ -2,12 +2,14 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreateEquipmentLoanUseCase } from '../application/CreateEquipmentLoanUseCase.js';
 import { CreateEquipmentLoanRequest } from '@alentapp/shared';
 import { GetEquipmentLoansUseCase } from '../application/GetEquipmentLoanUseCase.js';
+import { DeleteEquipmentLoanUseCase } from '../application/DeleteEquipmentLoanUseCase.js';
 
 export class EquipmentLoanController {
 
     constructor(
         private readonly createEquipmentLoanUseCase: CreateEquipmentLoanUseCase,
-        private readonly getEquipmentLoansUseCase: GetEquipmentLoansUseCase
+        private readonly getEquipmentLoansUseCase: GetEquipmentLoansUseCase,
+        private readonly deleteEquipmentLoanUseCase: DeleteEquipmentLoanUseCase 
     ) {}
 
 
@@ -47,5 +49,23 @@ export class EquipmentLoanController {
             return reply.status(500).send({ error: "Error interno, reintente más tarde" });
         }
     }
+
+    async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+        try {
+            const { id } = request.params;
+            await this.deleteEquipmentLoanUseCase.execute(id);
+            return reply.status(204).send();
+
+        } catch (error: any) {
+            
+            if (error.message.includes('El préstamo de equipamiento solicitado no existe')) {
+                return reply.status(400).send({ error: error.message });
+                //deberia ser 404 pero dejo el 400 por la consistencia con el TDD
+            }
+
+            return reply.status(500).send({ error: "Error al procesar la operacion, reintente mas tarde" });
+        }
+    }
+    
 }
 
