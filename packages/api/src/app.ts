@@ -28,6 +28,11 @@ import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.j
 import { DisciplineController } from './delivery/DisciplineController.js';
 import { GetLockersUseCase } from './application/GetLockersUseCase.js';
 
+import { PostgresPaymentRepository } from './infrastructure/PostgresPaymentRepository.js';
+import { PaymentValidator } from './domain/services/PaymentValidator.js';
+import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
+import { PaymentController } from './delivery/PaymentController.js';
+
 export function buildApp() {
     const server = Fastify({
         logger: {
@@ -63,7 +68,15 @@ export function buildApp() {
         deleteMemberUseCase
     );
 
+    const paymentRepo = new PostgresPaymentRepository();
+    const paymentValidator = new PaymentValidator(paymentRepo);
 
+    const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
+    
+
+    const paymentController = new PaymentController(
+        createPaymentUseCase
+    );
     const equipmentLoanRepository = new PostgresEquipmentLoanRepository();
     const equipmentLoanValidator = new EquipmentLoanValidator(equipmentLoanRepository, memberRepo);
     const createEquipmentLoanUseCase = new CreateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator);
@@ -90,6 +103,8 @@ export function buildApp() {
     server.put('/api/v1/socios/:id', memberController.update.bind(memberController));
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
 
+    
+    server.post('/api/v1/payments', paymentController.create.bind(paymentController));
     server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
