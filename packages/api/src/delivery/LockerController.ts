@@ -1,13 +1,15 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { CreateLockerUseCase } from '../application/CreateLockerUseCase.js';
-import { CreateLockerRequest } from '@alentapp/shared';
+import { CreateLockerRequest, UpdateLockerRequest } from '@alentapp/shared';
 import { GetLockersUseCase } from '../application/GetLockersUseCase.js';
 import { DeleteLockerUseCase } from '../application/DeleteLockerUseCase.js';
+import { UpdateLockerUseCase } from '../application/UpdateLockerUseCase.js';
 
 export class LockerController {
     constructor(
         private readonly createLockerUseCase: CreateLockerUseCase,
         private readonly getLockersUseCase: GetLockersUseCase,
+        private readonly updateLockerUseCase: UpdateLockerUseCase,
         private readonly deleteLockerUseCase: DeleteLockerUseCase,
     ) {
 
@@ -60,6 +62,45 @@ export class LockerController {
                 return reply.status(500).send({ error: error.message });
             }
         }
+
+    async update(
+        request: FastifyRequest<{ Params: { id: string }, Body: UpdateLockerRequest }>,
+        reply: FastifyReply,
+    ) {
+        try {
+            const { id } = request.params;
+            const locker = await this.updateLockerUseCase.execute(id, request.body);
+            return reply.status(200).send({ data: locker });
+        } catch (error: any) {
+            const msg = (error && error.message) ? String(error.message) : '';
+
+            if (msg === 'Ya existe un locker con ese número') {
+                return reply.status(409).send({ error: msg });
+            }
+
+            if (msg === '`number` debe ser entero y mayor a cero' || msg === 'number debe ser entero y mayor a cero') {
+                return reply.status(400).send({ error: msg });
+            }
+
+            if (msg === '`member_id` no válido' || msg === 'member_id no válido') {
+                return reply.status(400).send({ error: msg });
+            }
+
+            if (msg === 'El miembro indicado no existe' || msg === 'El locker no existe') {
+                return reply.status(404).send({ error: msg });
+            }
+
+            if (msg === 'El miembro ya posee un locker') {
+                return reply.status(422).send({ error: msg });
+            }
+
+            if (msg.startsWith('Estado Available') || msg.startsWith('Estado Occupied') || msg.startsWith('Estado Maintenance')) {
+                return reply.status(422).send({ error: msg });
+            }
+
+            return reply.status(500).send({ error: 'Error interno, reintente más tarde' });
+        }
+    }
 
      async delete(
         request: FastifyRequest<{ Params: { id: string } }>,
