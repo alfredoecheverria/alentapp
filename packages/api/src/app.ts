@@ -17,6 +17,7 @@ import { PostgresSportRepository } from './infrastructure/PostgresSportRepositor
 import { SportValidator } from './domain/services/SportValidator.ts'
 import { CreateSportUseCase } from './application/CreateSportUseCase.ts'
 import { GetSportsUseCase } from './application/GetSportsUseCase.ts'
+import { UpdateSportUseCase } from './application/UpdateSportUseCase.ts'
 import { SportController } from './delivery/SportController.ts'
 import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
 import { LockerValidator } from './domain/services/LockerValidator.js';
@@ -102,10 +103,12 @@ export function buildApp() {
 
     const createSportUseCase = new CreateSportUseCase(sportRepository, sportValidator);
     const getSportsUseCase = new GetSportsUseCase(sportRepository);
+    const updateSportUseCase = new UpdateSportUseCase(sportRepository, sportValidator);
 
     const sportController = new SportController(
         createSportUseCase,
         getSportsUseCase,
+        updateSportUseCase
     );
 
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
@@ -124,6 +127,7 @@ export function buildApp() {
     
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
+    server.put('/api/v1/sports/:id', sportController.update.bind(sportController));
 
     const lockerRepository = new PostgresLockerRepository();
     const lockerValidator = new LockerValidator(lockerRepository, memberRepo);
