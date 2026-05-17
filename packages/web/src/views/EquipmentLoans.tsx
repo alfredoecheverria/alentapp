@@ -30,7 +30,6 @@ import {
 import { Field } from "../components/ui/field";
 
 export function EquipmentLoansView() {
-  const [loans, setLoans] = useState<EquipmentLoanDTO[]>([]);
   const [members, setMembers] = useState<MemberDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,10 +53,9 @@ export function EquipmentLoansView() {
     setIsLoading(true);
     setError(null);
     try {
-      const [loansData, membersData] = await Promise.all([
+      const [membersData] = await Promise.all([
         membersService.getAll()
       ]);
-      setLoans(loansData);
       setMembers(membersData);
     } catch (err: any) {
       setError(err.message || "Error al cargar los datos");
