@@ -69,7 +69,7 @@ export class SportController {
             await this.deleteSportUseCase.execute(id);
             return reply.status(204).send(); // No Content
         } catch (error: any) {
-            if (error.message.includes('El deporte no existe') {
+            if (error.message.includes('El deporte no existe')) {
                 return reply.status(400).send({ error: error.message })
             }
             return reply.status(500).send({ error: 'error del motor de base de datos' });
