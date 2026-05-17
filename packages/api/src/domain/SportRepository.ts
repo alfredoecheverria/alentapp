@@ -1,7 +1,8 @@
-import { SportDTO } from '@alentapp/shared';
+import { SportDTO, UpdateSportRequest } from '@alentapp/shared';
 
 export interface SportRepository {
     create(sport: Omit<SportDTO, 'id'>): Promise<SportDTO>;
     findByName(name: string): Promise<SportDTO | null>;
     findAll(): Promise<SportDTO[]>;
+    update(id: string, data: UpdateSportRequest): Promise<SportDTO>;
 }
