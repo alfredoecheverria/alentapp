@@ -1,15 +1,19 @@
 import {
+  Box,
   Button,
+  Center,
   Flex,
   Heading,
   HStack,
   Input,
+  Spinner,
+  Table,
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { LuPlus } from "react-icons/lu";
+import { LuPlus, LuRefreshCw } from "react-icons/lu";
 import { useEffect, useState } from "react";
-import type { CreateLockerRequest, LockerStatus, MemberDTO } from "@alentapp/shared";
+import { type CreateLockerRequest, type LockerDTO, type LockerStatus, type MemberDTO } from "@alentapp/shared";
 import { lockersService } from "../services/lockers";
 import { membersService } from "../services/members";
 import {
@@ -44,18 +48,35 @@ export function LockersView() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [members, setMembers] = useState<MemberDTO[]>([]);
+  const [lockers, setLockers] = useState<LockerDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadMembers = async () => {
+  const fetchLockers = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const data = await membersService.getAll();
-        setMembers(data);
-      } catch (error) {
-        console.error("Error al cargar miembros", error);
+        const data = await lockersService.getAll();
+        setLockers(data);
+      } catch (err: any) {
+        setError(err.message || "Error al cargar los lockers");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    loadMembers();
+  const fetchMembers = async () => {
+    try {
+      const data = await membersService.getAll();
+      setMembers(data);
+    } catch (error) {
+      console.error("Error al cargar miembros", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMembers();
+    fetchLockers();
   }, []);
 
   const memberOptions = createListCollection({
@@ -98,6 +119,7 @@ export function LockersView() {
         status: "Available",
         member_id: undefined,
       });
+      fetchLockers();
     } catch (err: any) {
       alert(err.message || "Error al guardar el locker");
     } finally {
@@ -118,11 +140,72 @@ export function LockersView() {
             </Text>
           </Stack>
           <HStack gap="3">
+            <Button variant="outline" onClick={fetchLockers} disabled={isLoading}>
+              <LuRefreshCw /> Actualizar
+            </Button>
             <Button colorPalette="blue" size="md" onClick={openCreateModal}>
               <LuPlus /> Agregar Locker
             </Button>
           </HStack>
         </Flex>
+
+        <Box
+          bg="bg.panel"
+          borderRadius="xl"
+          boxShadow="sm"
+          borderWidth="1px"
+          overflow="hidden"
+          minH="300px"
+          position="relative"
+        >
+          {isLoading ? (
+            <Center h="300px">
+              <Stack align="center" gap="4">
+                <Spinner size="xl" color="blue.500" />
+                <Text color="fg.muted">Cargando lockers...</Text>
+              </Stack>
+            </Center>
+          ) : lockers.length === 0 ? (
+            <Center h="300px">
+              <Stack align="center" gap="4">
+                <Text color="fg.muted">No se encontraron lockers.</Text>
+                <Button variant="ghost" onClick={fetchLockers}>Reintentar</Button>
+              </Stack>
+            </Center>
+          ) : (
+            <Table.Root size="md" variant="line" interactive>
+              <Table.Header>
+                <Table.Row bg="bg.muted/50">
+                  <Table.ColumnHeader py="4">Número</Table.ColumnHeader>
+                  <Table.ColumnHeader py="4">Locación</Table.ColumnHeader>
+                  <Table.ColumnHeader py="4">Estado</Table.ColumnHeader>
+                  <Table.ColumnHeader py="4">Miembro</Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {lockers.map((locker) => (
+                  <Table.Row key={locker.id} _hover={{ bg: "bg.muted/30" }}>
+                    <Table.Cell fontWeight="semibold" color="fg.emphasized">
+                      {locker.number}
+                    </Table.Cell>
+                    <Table.Cell color="fg.muted">{locker.location}</Table.Cell>
+                    <Table.Cell color="fg.muted">{locker.status}</Table.Cell>
+                    <Table.Cell color="fg.muted">
+                      {locker.member ? `${locker.member.name} (${locker.member.dni})` : "Sin asignar"}
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          )}
+        </Box>
+
+        {error && (
+          <Box p="4" bg="red.50" color="red.700" borderRadius="md" border="1px solid" borderColor="red.200">
+            <Text fontWeight="bold">Error:</Text>
+            <Text>{error}</Text>
+          </Box>
+        )}
 
         {/* Modal para agregar locker */}
         <DialogContent>
