@@ -18,9 +18,7 @@ export class UpdateSportUseCase {
         }
 
         // Valida que la descripcion no sea vacia
-        if (data.description) {
-            this.sportValidator.validateEmptyDescription(data.description);
-        }
+        this.sportValidator.validateEmptyDescription(data.description);
 
         let finalData = { max_capacity: data.max_capacity, description: data.description}
         return this.sportRepository.update(id, finalData);

@@ -3,9 +3,9 @@ import { SportRepository } from "../SportRepository.ts";
 export class SportValidator {
     constructor(private readonly sportRepo: SportRepository) {}
 
-    validateSportExists(id: string): void {
+    async validateSportExists(id: string): void {
         const exists = await this.sportRepo.findById(id);
-        if (exists) {
+        if (!exists) {
             throw new Error('El deporte no existe');
         }
     }
