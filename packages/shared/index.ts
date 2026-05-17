@@ -50,3 +50,24 @@ export interface CreateSportRequest {
   additional_price?: float | null;
   requires_medical_certificate: boolean;
 }
+
+// ==========================================
+// Locker
+// ==========================================
+export type LockerStatus = 'Available' | 'Occupied' | 'Maintenance';
+
+export interface LockerDTO {
+  id: string; // UUID
+  number: number;
+  location: string;
+  status: LockerStatus;
+  member_id?: string;
+  member?: MemberDTO;
+}
+
+export interface CreateLockerRequest {
+  number: number;
+  location: string;
+  status?: LockerStatus;
+  member_id?: string;
+}
