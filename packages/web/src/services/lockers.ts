@@ -19,6 +19,14 @@ export const lockersService = {
     const result = await response.json();
     return result.data;
   },
+  async getAll(): Promise<LockerDTO[]> {
+      const response = await fetch(`${API_URL}/lockers`);
+      if (!response.ok) {
+        throw new Error('Error al obtener los lockers');
+      }
+      const result = await response.json();
+      return result.data;
+    },
 
 
 };
