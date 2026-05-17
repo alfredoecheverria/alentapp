@@ -1,4 +1,4 @@
-import { LockerDTO } from "@alentapp/shared";
+import { LockerDTO, UpdateLockerRequest } from "@alentapp/shared";
 
 export interface LockerRepository {
     create(locker: Omit<LockerDTO, 'id'>): Promise<LockerDTO>;
@@ -7,4 +7,5 @@ export interface LockerRepository {
     findAll(): Promise<LockerDTO[]>;
     findById(id: string): Promise<LockerDTO | null>;
     delete(id: string): Promise<void>;
+    update(id: string, data: UpdateLockerRequest): Promise<LockerDTO>;
 }
