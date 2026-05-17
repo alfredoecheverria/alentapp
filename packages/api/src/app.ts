@@ -33,6 +33,8 @@ import { PostgresPaymentRepository } from './infrastructure/PostgresPaymentRepos
 import { PaymentValidator } from './domain/services/PaymentValidator.js';
 import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
 import { PaymentController } from './delivery/PaymentController.js';
+import { GetPaymentUseCase } from './application/GetPaymentUseCase.js';
+
 
 export function buildApp() {
     const server = Fastify({
@@ -70,13 +72,15 @@ export function buildApp() {
     );
 
     const paymentRepo = new PostgresPaymentRepository();
-    const paymentValidator = new PaymentValidator(paymentRepo);
+    const paymentValidator = new PaymentValidator(paymentRepo, memberRepo);
 
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
+    const getPaymentUseCase = new GetPaymentUseCase(paymentRepo);
     
 
     const paymentController = new PaymentController(
-        createPaymentUseCase
+        createPaymentUseCase,
+        getPaymentUseCase
     );
     const equipmentLoanRepository = new PostgresEquipmentLoanRepository();
     const equipmentLoanValidator = new EquipmentLoanValidator(equipmentLoanRepository, memberRepo);
@@ -106,6 +110,7 @@ export function buildApp() {
 
     
     server.post('/api/v1/payments', paymentController.create.bind(paymentController));
+    server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
     server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
