@@ -1,8 +1,17 @@
-import type { CreateDisciplineRequest } from "@alentapp/shared";
+import type { DisciplineDTO, CreateDisciplineRequest } from "@alentapp/shared";
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api/v1';
 
 export const disciplinesService = {
+  async getAll(): Promise<DisciplineDTO[]> {
+    const response = await fetch(`${API_URL}/disciplines`);
+    if (!response.ok) {
+      throw new Error('Error al obtener las sanciones disciplinarias');
+    }
+    const result = await response.json();
+    return result.data;
+  },
+  
   async create(data: CreateDisciplineRequest) {
     const res = await fetch(`${API_URL}/disciplines`, {
       method: "POST",

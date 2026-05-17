@@ -36,6 +36,7 @@ import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplin
 import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
 import { DisciplineController } from './delivery/DisciplineController.js';
+import { GetDisciplinesUseCase } from './application/GetDisciplinesUseCase.js';
 import { GetLockersUseCase } from './application/GetLockersUseCase.js';
 import { DeleteLockerUseCase } from './application/DeleteLockerUseCase.js';
 import { UpdateLockerUseCase } from './application/UpdateLockerUseCase.js';
@@ -68,6 +69,7 @@ export function buildApp() {
         credentials: true,
     });
 
+    // MEMBER
     const memberRepo = new PostgresMemberRepository();
     const memberValidator = new MemberValidator(memberRepo);
 
@@ -88,6 +90,7 @@ export function buildApp() {
     server.put('/api/v1/socios/:id', memberController.update.bind(memberController));
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
 
+    // PAYMENT
     const paymentRepo = new PostgresPaymentRepository();
     const paymentValidator = new PaymentValidator(paymentRepo, memberRepo);
 
@@ -103,7 +106,9 @@ export function buildApp() {
 
     server.post('/api/v1/payments', paymentController.create.bind(paymentController));
     server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
+    server.put('/api/v1/payments/:id', paymentController.update.bind(paymentController));
 
+    // EQUIPMENT-LOAN
     const equipmentLoanRepository = new PostgresEquipmentLoanRepository();
     const equipmentLoanValidator = new EquipmentLoanValidator(equipmentLoanRepository, memberRepo);
     const getEquipmentLoansUseCase = new GetEquipmentLoansUseCase(equipmentLoanRepository);
@@ -119,6 +124,7 @@ export function buildApp() {
     server.get('/api/v1/equipment-loans', equipmentLoanController.getAll.bind(equipmentLoanController));
     server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
 
+    // SPORT
     const sportRepository = new PostgresSportRepository();
     const sportValidator = new SportValidator(sportRepository);
 
@@ -150,6 +156,7 @@ export function buildApp() {
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
     server.put('/api/v1/sports/:id', sportController.update.bind(sportController));
 
+    // ENROLLMENT
     const enrollmentRepository = new PostgresEnrollmentRepository();
     const enrollmentValidator = new EnrollmentValidator(enrollmentRepository, sportRepository);
 
@@ -161,6 +168,7 @@ export function buildApp() {
 
     server.post('/api/v1/enrollments', enrollmentController.create.bind(enrollmentController));
 
+    // LOCKER
     const lockerRepository = new PostgresLockerRepository();
     const lockerValidator = new LockerValidator(lockerRepository, memberRepo);
     const createLockerUseCase = new CreateLockerUseCase(lockerRepository, lockerValidator);
@@ -179,23 +187,17 @@ export function buildApp() {
     server.put('/api/v1/lockers/:id', lockerController.update.bind(lockerController));
     server.delete('/api/v1/lockers/:id', lockerController.delete.bind(lockerController));
 
+    // DISCIPLINE
     const disciplineRepo = new PostgresDisciplineRepository();
     const disciplineValidator = new DisciplineValidator();
 
-    const createDisciplineUseCase = new CreateDisciplineUseCase(
-        disciplineRepo,
-        disciplineValidator,
-        memberValidator
-    );
+    const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator, memberValidator);
+    const getDisciplinesUseCase = new GetDisciplinesUseCase(disciplineRepo);
 
-    const disciplineController = new DisciplineController(
-        createDisciplineUseCase
-    );
+    const disciplineController = new DisciplineController(createDisciplineUseCase, getDisciplinesUseCase);
 
-    server.post(
-        '/api/v1/disciplines',
-        disciplineController.create.bind(disciplineController)
-    );
+    server.post('/api/v1/disciplines',disciplineController.create.bind(disciplineController));
+    server.get('/api/v1/disciplines',disciplineController.getAll.bind(disciplineController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
