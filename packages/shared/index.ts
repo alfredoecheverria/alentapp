@@ -31,6 +31,7 @@ export interface UpdateMemberRequest {
   category?: MemberCategory;
   status?: MemberStatus;
 }
+
 // ==========================================
 // Sport
 // ==========================================
@@ -70,4 +71,26 @@ export interface CreateLockerRequest {
   location: string;
   status?: LockerStatus;
   member_id?: string;
+}
+
+// ==========================================
+// Discipline
+// ==========================================
+
+export interface DisciplineDTO {
+  id: string; // UUID
+  reason: string;
+  start_date: string; // ISO Date String
+  end_date: string; // ISO Date String
+  is_total_suspension: boolean;
+  member_id: string; // UUID del miembro sancionado
+  deactivated_at: string | null; // ISO Date String o null si sigue activo
+}
+
+export interface CreateDisciplineRequest {
+  member_id: string; // UUID del miembro sancionado
+  reason: string;
+  start_date: string; // ISO Date String
+  end_date: string; // ISO Date String
+  is_total_suspension: boolean;
 }
