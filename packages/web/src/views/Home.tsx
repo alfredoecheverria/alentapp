@@ -33,7 +33,7 @@ export function HomeView() {
 
         <SectionCard 
           title="Prestamos de Equipamiento"
-          description="Administra el padrón de socios, sus categorías, estados de cuenta y datos personales."
+          description="Administra los préstamos de equipamiento, sus estados y detalles."
           to="/equipment-loans"
           icon={LuUsers}
         />
