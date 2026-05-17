@@ -64,5 +64,21 @@ export class LockerValidator {
             throw new Error('member_id no válido');
         }
     }
+    
+    async validateLockerExists(id: string): Promise<void>{
+        const locker = await this.lockerRepository.findById(id);
+
+        if (locker == null){
+            throw new Error("El locker no existe");
+        }
+    }
+
+    async validateLockerHasNoMember(id: string): Promise<void>{
+        const locker = await this.lockerRepository.findById(id);
+
+        if (locker?.member_id) {
+            throw new Error('No se puede eliminar un locker con member asignado');
+        }
+    }
 
 }
