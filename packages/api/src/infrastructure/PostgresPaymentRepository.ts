@@ -22,11 +22,14 @@ type DBPayment = {
     month: number;
 }
 
+
 export class PostgresPaymentRepository implements PaymentRepository {
     async create(data: CreatePaymentRequest): Promise<PaymentDTO> {
         const payment = await prisma.payment.create({
             data: {
-                member_id: data.member_id,
+                member: {
+                    connect: { id: data.member_id }
+                } ,
                 amount: data.amount,
                 due_date: new Date(data.due_date),
                 status: data.status,
@@ -38,6 +41,13 @@ export class PostgresPaymentRepository implements PaymentRepository {
 
         return this.mapToDTO(payment);
     }
+
+    findByMemberId(member_id: string): Promise<PaymentDTO[]> {
+        return prisma.payment.findMany({
+            where: { member_id }
+        }).then(payments => payments.map(this.mapToDTO));
+    }
+
 
     private mapToDTO(payment: DBPayment): PaymentDTO {
         return {
