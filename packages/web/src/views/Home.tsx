@@ -40,6 +40,13 @@ export function HomeView() {
           icon={IoMdFootball}
         />
 
+        <SectionCard 
+          title="Prestamos de Equipamiento"
+          description="Administra los préstamos de equipamiento, sus estados y detalles."
+          to="/equipment-loans"
+          icon={LuUsers}
+        />
+
         <SectionCard
           title="Lockers"
           description="Gestiona los lockers disponibles"

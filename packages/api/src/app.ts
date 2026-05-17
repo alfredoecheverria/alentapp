@@ -7,6 +7,11 @@ import { GetMembersUseCase } from './application/GetMembersUseCase.js';
 import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
+import { PostgresEquipmentLoanRepository } from './infrastructure/PostgresEquipmentLoanRepository.js';
+import { EquipmentLoanValidator } from './domain/services/EquipmentLoanValidator.js';
+import { CreateEquipmentLoanUseCase } from './application/CreateEquipmentLoanUseCase.js';
+import { EquipmentLoanController } from './delivery/EquipmentLoanController.js';
+
 import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.ts'
 import { SportValidator } from './domain/services/SportValidator.ts'
 import { CreateSportUseCase } from './application/CreateSportUseCase.ts'
@@ -58,6 +63,17 @@ export function buildApp() {
         deleteMemberUseCase
     );
 
+
+    const equipmentLoanRepository = new PostgresEquipmentLoanRepository();
+    const equipmentLoanValidator = new EquipmentLoanValidator(equipmentLoanRepository, memberRepo);
+    const createEquipmentLoanUseCase = new CreateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator);
+
+    
+    const equipmentLoanController = new EquipmentLoanController(
+        createEquipmentLoanUseCase,
+    );
+
+
     const sportRepository = new PostgresSportRepository();
     const sportValidator = new SportValidator(sportRepository);
 
@@ -74,6 +90,7 @@ export function buildApp() {
     server.put('/api/v1/socios/:id', memberController.update.bind(memberController));
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
 
+    server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
 
