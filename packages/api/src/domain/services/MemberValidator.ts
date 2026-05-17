@@ -24,4 +24,11 @@ export class MemberValidator {
         const age = Math.abs(ageDate.getUTCFullYear() - 1970);
         return age < 18;
     }
+
+    async validateExists(memberId: string): Promise<void> {
+        const member = await this.memberRepo.findById(memberId);
+        if (!member) {
+            throw new Error('El socio indicado no existe');
+        }
+    }
 }
