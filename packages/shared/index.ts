@@ -58,6 +58,17 @@ export interface CreatePaymentRequest {
   year: number;
   month: number;
 }
+
+export interface UpdatePaymentRequest {
+  member_id?: string;
+  amount?: number;
+  status?: PaymentStatus; 
+  due_date?: string;
+  payment_date?: string;
+  year?: number;
+  month?: number;
+}
+
 // Equipment-Loan
 // ==========================================
 
