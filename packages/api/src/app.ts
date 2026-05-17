@@ -12,6 +12,10 @@ import { SportValidator } from './domain/services/SportValidator.ts'
 import { CreateSportUseCase } from './application/CreateSportUseCase.ts'
 import { GetSportsUseCase } from './application/GetSportsUseCase.ts'
 import { SportController } from './delivery/SportController.ts'
+import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
+import { LockerValidator } from './domain/services/LockerValidator.js';
+import { NewLockerUseCase } from './application/NewLockerUseCase.js';
+import { LockerController } from './delivery/LockerController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -66,6 +70,15 @@ export function buildApp() {
 
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
+
+    const lockerRepository = new PostgresLockerRepository();
+    const lockerValidator = new LockerValidator(lockerRepository, memberRepo);
+    const newLockerUseCase = new NewLockerUseCase(lockerRepository, lockerValidator);
+    const lockerController = new LockerController(
+        newLockerUseCase,
+    );
+
+    server.post('/api/v1/lockers', lockerController.create.bind(lockerController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
