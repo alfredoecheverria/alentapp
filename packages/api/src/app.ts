@@ -27,6 +27,7 @@ import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplin
 import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
 import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
 import { DisciplineController } from './delivery/DisciplineController.js';
+import { GetDisciplinesUseCase } from './application/GetDisciplinesUseCase.js';
 import { GetLockersUseCase } from './application/GetLockersUseCase.js';
 import { DeleteLockerUseCase } from './application/DeleteLockerUseCase.js';
 
@@ -143,20 +144,13 @@ export function buildApp() {
     const disciplineRepo = new PostgresDisciplineRepository();
     const disciplineValidator = new DisciplineValidator();
 
-    const createDisciplineUseCase = new CreateDisciplineUseCase(
-        disciplineRepo,
-        disciplineValidator,
-        memberValidator
-    );
+    const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator, memberValidator);
+    const getDisciplinesUseCase = new GetDisciplinesUseCase(disciplineRepo);
 
-    const disciplineController = new DisciplineController(
-        createDisciplineUseCase
-    );
+    const disciplineController = new DisciplineController(createDisciplineUseCase, getDisciplinesUseCase);
 
-    server.post(
-        '/api/v1/disciplines',
-        disciplineController.create.bind(disciplineController)
-    );
+    server.post('/api/v1/disciplines',disciplineController.create.bind(disciplineController));
+    server.get('/api/v1/disciplines',disciplineController.getAll.bind(disciplineController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
