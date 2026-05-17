@@ -26,7 +26,7 @@ export class PostgresEnrollmentRepository implements EnrollmentRepository {
                 id: data.id,
                 member_id: data.member_id,
                 sport_id: data.sport_id,
-                enrollment_date: data.sport_id,
+                enrollment_date: new Date(data.enrollment_date),
                 is_active: data.is_active,
             },
         });
@@ -35,7 +35,7 @@ export class PostgresEnrollmentRepository implements EnrollmentRepository {
     }
 
     async findByMemberIdAndSportId(member_id: string, sport_id: string): Promise<EnrollmentDTO | null> {
-        const enrollment = await prisma.enrollment.findUnique({
+        const enrollment = await prisma.enrollment.findFirst({
             where: {
                 AND: [{
                     member_id: member_id,
@@ -55,5 +55,13 @@ export class PostgresEnrollmentRepository implements EnrollmentRepository {
         return enrollments.map(this.mapToDTO);
     }
 
-    private mapToDTO(enrollment: DBEnrollment): EnrollmentDTO;
+    private mapToDTO(enrollment: DBEnrollment): EnrollmentDTO {
+        return {
+            id: enrollment.id,
+            member_id: enrollment.member_id,
+            sport_id: enrollment.sport_id,
+            enrollment_date: enrollment.enrollment_date.toISOString(),
+            is_active: enrollment.is_active,
+        }
+    }
 }

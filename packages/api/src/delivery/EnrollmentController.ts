@@ -20,5 +20,6 @@ export class EnrollmentController {
                 return reply.status(409).send({ error: error.message });
             }
             return reply.status(500).send({ error: 'Error interno, reintente más tarde' });
+        }
     }
 }
