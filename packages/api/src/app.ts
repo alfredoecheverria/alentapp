@@ -19,6 +19,7 @@ import { SportValidator } from './domain/services/SportValidator.ts'
 import { CreateSportUseCase } from './application/CreateSportUseCase.ts'
 import { GetSportsUseCase } from './application/GetSportsUseCase.ts'
 import { UpdateSportUseCase } from './application/UpdateSportUseCase.ts'
+import { DeleteSportUseCase } from './application/DeleteSportUseCase.ts'
 import { SportController } from './delivery/SportController.ts'
 
 import { PostgresEnrollmentRepository } from './infrastructure/PostgresEnrollmentRepository.ts'
@@ -118,16 +119,19 @@ export function buildApp() {
     const createSportUseCase = new CreateSportUseCase(sportRepository, sportValidator);
     const getSportsUseCase = new GetSportsUseCase(sportRepository);
     const updateSportUseCase = new UpdateSportUseCase(sportRepository, sportValidator);
+    const deleteSportUseCase = new DeleteSportUseCase(sportRepository);
 
     const sportController = new SportController(
         createSportUseCase,
         getSportsUseCase,
-        updateSportUseCase
+        updateSportUseCase,
+        deleteSportUseCase
     );
 
     server.post('/api/v1/sports', sportController.create.bind(sportController));
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
     server.put('/api/v1/sports/:id', sportController.update.bind(sportController));
+    server.delete('/api/v1/sports/:id', sportController.delete.bind(sportController));
 
     const enrollmentRepository = new PostgresEnrollmentRepository();
     const enrollmentValidator = new EnrollmentValidator(enrollmentRepository, sportRepository);
