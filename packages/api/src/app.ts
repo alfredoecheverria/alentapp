@@ -7,16 +7,20 @@ import { GetMembersUseCase } from './application/GetMembersUseCase.js';
 import { UpdateMemberUseCase } from './application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from './application/DeleteMemberUseCase.js';
 import { MemberController } from './delivery/MemberController.js';
+import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.ts'
+import { SportValidator } from './domain/services/SportValidator.ts'
+import { CreateSportUseCase } from './application/CreateSportUseCase.ts'
+import { SportController } from './delivery/SportController.ts'
 
 export function buildApp() {
     const server = Fastify({
         logger: {
             level: 'info',
-            transport: process.env.NODE_ENV === 'development' 
+            transport: process.env.NODE_ENV === 'development'
             ? {
                 target: 'pino-pretty',
                 options: { translateTime: 'HH:MM:ss Z', ignore: 'pid,hostname' },
-                } 
+                }
             : undefined,
         },
     });
@@ -30,23 +34,34 @@ export function buildApp() {
 
     const memberRepo = new PostgresMemberRepository();
     const memberValidator = new MemberValidator(memberRepo);
-    
+
     const createMemberUseCase = new CreateMemberUseCase(memberRepo, memberValidator);
     const getMembersUseCase = new GetMembersUseCase(memberRepo);
     const updateMemberUseCase = new UpdateMemberUseCase(memberRepo, memberValidator);
     const deleteMemberUseCase = new DeleteMemberUseCase(memberRepo);
 
     const memberController = new MemberController(
-        createMemberUseCase, 
+        createMemberUseCase,
         getMembersUseCase,
         updateMemberUseCase,
         deleteMemberUseCase
+    );
+
+    const sportRepository = new PostgresSportRepository();
+    const sportValidator = new SportValidator(sportRepository);
+
+    const createSportUseCase = new CreateSportUseCase(sportRepository, sportValidator);
+
+    const sportController = new SportController(
+        createSportUseCase,
     );
 
     server.get('/api/v1/socios', memberController.getAll.bind(memberController));
     server.post('/api/v1/socios', memberController.create.bind(memberController));
     server.put('/api/v1/socios/:id', memberController.update.bind(memberController));
     server.delete('/api/v1/socios/:id', memberController.delete.bind(memberController));
+
+    server.post('/api/v1/sports', sportController.create.bind(sportController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
