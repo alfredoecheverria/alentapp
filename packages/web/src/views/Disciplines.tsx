@@ -287,7 +287,10 @@ export function DisciplinesView() {
                   onCheckedChange={(value) =>
                     setFormData({
                       ...formData,
-                      is_total_suspension: value,
+                      is_total_suspension:
+                        typeof value === 'boolean'
+                          ? value
+                          : !!value?.checked,
                     })
                   }
                 >
