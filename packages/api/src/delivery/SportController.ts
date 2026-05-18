@@ -2,7 +2,6 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreateSportUseCase } from '../application/CreateSportUseCase.ts'
 import { GetSportsUseCase } from '../application/GetSportsUseCase.ts'
 import { UpdateSportUseCase } from '../application/UpdateSportUseCase.ts'
-import { DeleteSportUseCase } from '../application/DeleteSportUseCase.ts'
 import { CreateSportRequest, UpdateSportRequest } from '@alentapp/shared'
 
 export class SportController {
@@ -10,7 +9,6 @@ export class SportController {
         private readonly createSportUseCase: CreateSportUseCase,
         private readonly getSportsUseCase: GetSportsUseCase,
         private readonly updateSportUseCase: UpdateSportsUseCase,
-        private readonly deleteSportUseCase: DeleteSportsUseCase,
     ) {}
 
     async create(
@@ -57,22 +55,6 @@ export class SportController {
             }
 
             return reply.status(500).send({ error: error.message });
-        }
-    }
-
-    async delete(
-        request: FastifyRequest<{ Params: { id: string } }>,
-        reply: FastifyReply,
-    ) {
-        try {
-            const { id } = request.params;
-            await this.deleteSportUseCase.execute(id);
-            return reply.status(204).send(); // No Content
-        } catch (error: any) {
-            if (error.message.includes('El deporte no existe')) {
-                return reply.status(400).send({ error: error.message })
-            }
-            return reply.status(500).send({ error: 'error del motor de base de datos' });
         }
     }
 }
