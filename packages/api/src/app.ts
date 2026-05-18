@@ -13,6 +13,7 @@ import { EquipmentLoanValidator } from './domain/services/EquipmentLoanValidator
 import { GetEquipmentLoansUseCase } from './application/GetEquipmentLoanUseCase.js';
 import { CreateEquipmentLoanUseCase } from './application/CreateEquipmentLoanUseCase.js';
 import { EquipmentLoanController } from './delivery/EquipmentLoanController.js';
+import { DeleteEquipmentLoanUseCase } from './application/DeleteEquipmentLoanUseCase.js';
 import { UpdateEquipmentLoanUseCase } from './application/UpdateEquipmentLoanUseCase.js';
 
 import { PostgresSportRepository } from './infrastructure/PostgresSportRepository.ts'
@@ -120,18 +121,21 @@ export function buildApp() {
     const equipmentLoanValidator = new EquipmentLoanValidator(equipmentLoanRepository, memberRepo);
     const getEquipmentLoansUseCase = new GetEquipmentLoansUseCase(equipmentLoanRepository);
     const createEquipmentLoanUseCase = new CreateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator);
-    const updateEquipmentLoanUseCase = new UpdateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator); 
-    
+    const updateEquipmentLoanUseCase = new UpdateEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator);
+    const deleteEquipmentLoanUseCase = new DeleteEquipmentLoanUseCase(equipmentLoanRepository, equipmentLoanValidator);
+
     const equipmentLoanController = new EquipmentLoanController(
         createEquipmentLoanUseCase,
         getEquipmentLoansUseCase,
-        updateEquipmentLoanUseCase
+        updateEquipmentLoanUseCase,
+        deleteEquipmentLoanUseCase
     );
 
     server.get('/api/v1/equipment-loans', equipmentLoanController.getAll.bind(equipmentLoanController));
     server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
     server.put('/api/v1/equipment-loans/:id', equipmentLoanController.update.bind(equipmentLoanController));
-
+    server.delete('/api/v1/equipment-loans/:id', equipmentLoanController.delete.bind(equipmentLoanController));
+    
     // SPORT
     const sportRepository = new PostgresSportRepository();
     const sportValidator = new SportValidator(sportRepository);
