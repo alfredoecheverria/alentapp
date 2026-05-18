@@ -16,4 +16,20 @@ export class DisciplineValidator {
             }
         }
     }
+
+    validateDisciplineExists(discipline: { deactivated_at?: string | null } | null): asserts discipline is { deactivated_at?: string | null } {
+        if (!discipline) {
+            throw new Error('La sancion indicada no existe');
+        }
+    }
+
+    validateDisciplineIsActive(discipline: { deactivated_at?: string | null } | null) {
+        if (!discipline) {
+            throw new Error('La sancion indicada no existe');
+        }
+
+        if (discipline.deactivated_at) {
+            throw new Error('La sanción ya fue finalizada previamente');
+        }
+    }
 }

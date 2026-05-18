@@ -70,6 +70,7 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
 
     async findAll(): Promise<DisciplineDTO[]> {
         const disciplines = await prisma.discipline.findMany({
+            where: { deactivated_at: null },
             orderBy: { start_date: 'desc' }
         });
 
@@ -91,6 +92,17 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
 
         return this.mapToDTO(discipline);
         }
+
+    async deactivate(id: string): Promise<DisciplineDTO> {
+        const discipline = await prisma.discipline.update({
+            where: { id },
+            data: {
+                deactivated_at: new Date(),
+            },
+        });
+
+        return this.mapToDTO(discipline);
+    }
 
     private mapToDTO(discipline: DBDiscipline): DisciplineDTO {
         return {

@@ -53,6 +53,7 @@ import { UpdatePaymentUseCase } from './application/UpdatePaymentUseCase.js';
 import { DeletePaymentUseCase } from './application/DeletePaymentUseCase.js';
 
 import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
+import { DeactivateDisciplineUseCase } from './application/DeactivateDisciplineUseCase.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -199,15 +200,22 @@ export function buildApp() {
         disciplineRepo,
         disciplineValidator
     );
+    const deactivateDisciplineUseCase = new DeactivateDisciplineUseCase(
+        disciplineRepo,
+        disciplineValidator
+    );
 
     const disciplineController = new DisciplineController(
         createDisciplineUseCase,
         getDisciplinesUseCase,
-        updateDisciplineUseCase
+        updateDisciplineUseCase,
+        deactivateDisciplineUseCase
     );
 
     server.post('/api/v1/disciplines',disciplineController.create.bind(disciplineController));
     server.get('/api/v1/disciplines',disciplineController.getAll.bind(disciplineController));
+
+    server.put('/api/v1/disciplines/:id/deactivate', disciplineController.deactivate.bind(disciplineController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })

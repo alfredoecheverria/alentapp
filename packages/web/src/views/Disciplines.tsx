@@ -14,7 +14,7 @@ import {
   Checkbox,
 } from "@chakra-ui/react";
 
-import { LuPlus, LuRefreshCw, LuPencil } from "react-icons/lu";
+import { LuPlus, LuRefreshCw, LuPencil, LuTrash2 } from "react-icons/lu";
 import { useEffect, useState } from "react";
 
 import type {CreateDisciplineRequest, DisciplineDTO, MemberDTO,} from "@alentapp/shared";
@@ -122,6 +122,25 @@ export function DisciplinesView() {
     });
 
     setIsDialogOpen(true);
+  };
+
+  const handleDeactivate = async (discipline: DisciplineDTO) => {
+    const confirmed = window.confirm(
+      `¿Estás seguro de que deseas finalizar la sanción de ${discipline.member_id}? Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsLoading(true);
+      await disciplinesService.deactivate(discipline.id);
+      alert('Sanción finalizada correctamente');
+      await fetchDisciplines();
+    } catch (err: any) {
+      alert(err.message || 'Error al finalizar la sanción');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -434,6 +453,14 @@ export function DisciplinesView() {
                           onClick={() => openEditModal(discipline)}
                         >
                           <LuPencil />
+                        </IconButton>
+                        <IconButton
+                          variant="ghost"
+                          size="sm"
+                          aria-label="Finalizar sanción"
+                          onClick={() => handleDeactivate(discipline)}
+                        >
+                          <LuTrash2 />
                         </IconButton>
                       </HStack>
                     </Table.Cell>

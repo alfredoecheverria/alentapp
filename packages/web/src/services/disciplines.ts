@@ -44,5 +44,19 @@ export const disciplinesService = {
       const result = await response.json();
       return result.data;
     },
+
+  async deactivate(id: string): Promise<DisciplineDTO> {
+    const response = await fetch(`${API_URL}/disciplines/${id}/deactivate`, {
+      method: 'PUT',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Error al finalizar la sanción');
+    }
+
+    const result = await response.json();
+    return result.data;
+  },
   
 };

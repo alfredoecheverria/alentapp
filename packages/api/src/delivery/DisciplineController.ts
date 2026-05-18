@@ -3,12 +3,14 @@ import { CreateDisciplineUseCase } from '../application/CreateDisciplineUseCase.
 import { GetDisciplinesUseCase } from '../application/GetDisciplinesUseCase.js';
 import { CreateDisciplineRequest, UpdateDisciplineRequest } from '@alentapp/shared';
 import { UpdateDisciplineUseCase } from '../application/UpdateDisciplineUseCase.js';
+import { DeactivateDisciplineUseCase } from '../application/DeactivateDisciplineUseCase.js';
 
 export class DisciplineController {
     constructor(
         private readonly createDisciplineUseCase: CreateDisciplineUseCase,
         private readonly getDisciplinesUseCase: GetDisciplinesUseCase,
         private readonly updateDisciplineUseCase: UpdateDisciplineUseCase,
+        private readonly deactivateDisciplineUseCase: DeactivateDisciplineUseCase,
     ) {}
 
     async getAll(_request: FastifyRequest, reply: FastifyReply) {
@@ -82,6 +84,26 @@ export class DisciplineController {
             return reply
             .code(500)
             .send({ message: "Error interno, reintente más tarde" });
+        }
+    }
+
+    async deactivate(
+        req: FastifyRequest<{ Params: { id: string } }> ,
+        reply: FastifyReply,
+    ) {
+        try {
+            const { id } = req.params;
+            const result = await this.deactivateDisciplineUseCase.execute(id);
+
+            return reply.code(200).send({ data: result, message: 'Sanción finalizada correctamente' });
+        } catch (err: any) {
+            if (err.message === 'La sancion indicada no existe') {
+                return reply.code(404).send({ message: err.message });
+            }
+            if (err.message === 'La sanción ya fue finalizada previamente') {
+                return reply.code(409).send({ message: err.message });
+            }
+            return reply.code(500).send({ message: 'Error interno, reintente más tarde' });
         }
     }
 }
