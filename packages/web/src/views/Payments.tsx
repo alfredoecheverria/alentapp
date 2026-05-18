@@ -39,8 +39,7 @@ import {
 const statusCategories = createListCollection({
   items: [
     { label: "Pendiente", value: "Pendiente" },
-    { label: "Pago", value: "Pago" },
-    { label: "Cancelado", value: "Cancelado" },
+    { label: "Pago", value: "Pago" }
   ],
 });
 
@@ -50,12 +49,10 @@ export function PaymentsView() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // State for the modal
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
 
-  // Form state
   const [formData, setFormData] = useState<CreatePaymentRequest & { status?: PaymentStatus }>({
     amount: 0,
     due_date: "",
@@ -98,6 +95,26 @@ export function PaymentsView() {
         });
         setIsDialogOpen(true);
     };
+
+  const handleDelete = async (id: string) => {
+      const confirmed = window.confirm(
+          "¿Estás seguro de que deseas cancelar este pago? Una vez cancelado, no podrá modificarse."
+      );
+
+      if (!confirmed) return;
+
+      try {
+          setIsLoading(true);
+          await paymentsService.delete(id);
+          
+          alert("Pago cancelado con éxito");
+          await fetchPayments(); 
+      } catch (err: any) {
+          alert(err.message || "Error al intentar cancelar el pago");
+      } finally {
+          setIsLoading(false);
+      }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -298,13 +315,20 @@ export function PaymentsView() {
                       px="2" 
                       py="0.5" 
                       borderRadius="md" 
-                      bg={payment.status === 'Pago' ? 'green.50' : 'orange.50'} 
-                      color={payment.status === 'Pago' ? 'green.700' : 'orange.700'} 
+                      // Lógica de colores según el estado
+                      bg={
+                          payment.status === 'Pago' ? 'green.50' : 
+                          payment.status === 'Cancelado' ? 'red.50' : 'orange.50'
+                      } 
+                      color={
+                          payment.status === 'Pago' ? 'green.700' : 
+                          payment.status === 'Cancelado' ? 'red.700' : 'orange.700'
+                      } 
                       fontSize="xs" 
                       fontWeight="bold"
-                    >
+                  >
                       {payment.status}
-                    </Box>
+                  </Box>
                   </Table.Cell>
                   <Table.Cell textAlign="end">
                     <HStack gap="2" justify="flex-end">
@@ -321,7 +345,7 @@ export function PaymentsView() {
                         size="sm" 
                         colorPalette="red" 
                         aria-label="Eliminar pago"
-                        onClick={() => {}}
+                        onClick={() => handleDelete(payment.id)}
                       >
                         <LuTrash2 />
                       </IconButton>

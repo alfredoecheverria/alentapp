@@ -43,5 +43,16 @@ export const paymentsService = {
         }
         const result = await response.json();
         return result.data;
+    },
+
+    async delete(id: string): Promise<void> {
+        const response = await fetch(`${API_URL}/payments/${id}`, {
+            method: 'DELETE', 
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Error al cancelar el pago');
+        }
     }
 };
