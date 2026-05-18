@@ -91,6 +91,20 @@ export function EquipmentLoansView() {
     setIsDialogOpen(true);
   };
 
+  const handleDelete = async (id: string) => {
+   const confirmDelete = window.confirm("Estas seguro de que deseas eliminar este registro de prestamo?");
+   if (!confirmDelete) return;
+
+
+   try {
+     await equipmentLoansService.delete(id);
+     fetchData(); // Refrescar la tabla al toque
+   } catch (err: any) {
+     alert(err.message || "Error al eliminar el préstamo");
+   }
+ };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -305,7 +319,12 @@ export function EquipmentLoansView() {
                          >
                            <LuPencil />
                          </IconButton>
-                         <IconButton size="xs" variant="ghost" colorPalette="red" aria-label="Eliminar">
+                         <IconButton
+                           size="xs"
+                           variant="ghost"
+                           colorPalette="red"
+                           aria-label="Eliminar"
+                           onClick={() => handleDelete(loan.id)}>
                            <LuTrash2 />
                          </IconButton>
                        </HStack>

@@ -52,6 +52,13 @@ export class PostgresEquipmentLoanRepository implements EquipmentLoanRepository 
        return equipmentLoans.map((loan) => this.mapToDTO(loan as any));
    }
 
+   async delete(id: string): Promise<void> {
+       await prisma.equipment_loan.delete({
+           where: { id: id },
+       });
+   }
+
+
    async update(id: string, data: UpdateEquipmentLoanRequest): Promise<EquipmentLoanDTO> {
        const equipmentLoan = await prisma.equipment_loan.update({
            where: { id: id },
