@@ -47,9 +47,11 @@ import { PaymentValidator } from './domain/services/PaymentValidator.js';
 import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
 import { PaymentController } from './delivery/PaymentController.js';
 import { GetPaymentUseCase } from './application/GetPaymentUseCase.js';
+
 import { UpdatePaymentUseCase } from './application/UpdatePaymentUseCase.js';
 import { DeletePaymentUseCase } from './application/DeletePaymentUseCase.js';
 
+import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -189,7 +191,16 @@ export function buildApp() {
     const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator, memberValidator);
     const getDisciplinesUseCase = new GetDisciplinesUseCase(disciplineRepo);
 
-    const disciplineController = new DisciplineController(createDisciplineUseCase, getDisciplinesUseCase);
+    const updateDisciplineUseCase = new UpdateDisciplineUseCase(
+        disciplineRepo,
+        disciplineValidator
+    );
+
+    const disciplineController = new DisciplineController(
+        createDisciplineUseCase,
+        getDisciplinesUseCase,
+        updateDisciplineUseCase
+    );
 
     server.post('/api/v1/disciplines',disciplineController.create.bind(disciplineController));
     server.get('/api/v1/disciplines',disciplineController.getAll.bind(disciplineController));
@@ -197,6 +208,11 @@ export function buildApp() {
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
     });
+
+    server.put(
+        '/api/v1/disciplines/:id',
+        disciplineController.update.bind(disciplineController)
+    );
 
     return server;
 }
