@@ -45,6 +45,7 @@ import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
 import { PaymentController } from './delivery/PaymentController.js';
 import { GetPaymentUseCase } from './application/GetPaymentUseCase.js';
 import { UpdatePaymentUseCase } from './application/UpdatePaymentUseCase.js';
+import { DeletePaymentUseCase } from './application/DeletePaymentUseCase.js';
 
 
 export function buildApp() {
@@ -95,16 +96,19 @@ export function buildApp() {
     const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, paymentValidator);
     const getPaymentUseCase = new GetPaymentUseCase(paymentRepo);
     const updatePaymentUseCase = new UpdatePaymentUseCase(paymentRepo, memberRepo, paymentValidator);
+    const deletePaymentUseCase = new DeletePaymentUseCase(paymentRepo, paymentValidator);
 
     const paymentController = new PaymentController(
         createPaymentUseCase,
         getPaymentUseCase,
         updatePaymentUseCase,
+        deletePaymentUseCase,
     );
 
     server.post('/api/v1/payments', paymentController.create.bind(paymentController));
     server.get('/api/v1/payments', paymentController.getAll.bind(paymentController));
     server.put('/api/v1/payments/:id', paymentController.update.bind(paymentController));
+    server.delete('/api/v1/payments/:id', paymentController.deletePayment.bind(paymentController));
 
     // EQUIPMENT-LOAN
     const equipmentLoanRepository = new PostgresEquipmentLoanRepository();

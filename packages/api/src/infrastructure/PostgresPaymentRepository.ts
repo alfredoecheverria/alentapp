@@ -90,4 +90,13 @@ export class PostgresPaymentRepository implements PaymentRepository {
 
         return this.mapToDTO(payment);
     }
+
+    async delete(id: string): Promise<void> {    
+        await prisma.payment.update({
+            where: { id },
+            data: { 
+                status: 'Cancelado'
+            }
+        });
+    }
 }   
