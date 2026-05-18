@@ -165,55 +165,6 @@ export interface CreateDisciplineRequest {
 }
 
 // ==========================================
-// Equipment-Loan
-// ==========================================
-
-export type EquipmentLoanStatus = 'Loaned' | 'Returned' | 'Damaged';
-
-export interface EquipmentLoanDTO {
-  id: string; // UUID
-  item_name: string;
-  status: EquipmentLoanStatus;
-  loan_date: string; // ISO Date String (YYYY-MM-DD)
-  due_date: string; // ISO Date String (YYYY-MM-DD)
-  member_id: string;
-}
-
-export interface CreateEquipmentLoanRequest {
-  item_name: string;
-  status: EquipmentLoanStatus;
-  loan_date: string; // ISO Date String (YYYY-MM-DD)
-  due_date: string; // ISO Date String (YYYY-MM-DD)
-  member_id: string;
-}
-
-// ==========================================
-// Payment
-// ==========================================
-export type PaymentStatus = 'Pendiente' | 'Pago' | 'Cancelado';
-
-export interface PaymentDTO {
-  id: string; // UUID
-  member_id: string; // UUID del miembro que realizó el pago
-  amount: number; // Monto del pago
-  status: PaymentStatus;
-  due_date: string; // Fecha de vencimiento del pago (ISO Date String)
-  payment_date: string; // Fecha en que se realizó el pago (ISO Date String)
-  year: number; // Año del pago
-  month: number; // Mes del pago (1-12)
-}
-
-export interface CreatePaymentRequest {
-  member_id: string;
-  amount: number;
-  status: PaymentStatus;
-  due_date: string;
-  payment_date: string;
-  year: number;
-  month: number;
-}
-
-// ==========================================
 // Enrollment
 // ==========================================
 
