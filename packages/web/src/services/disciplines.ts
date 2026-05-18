@@ -28,4 +28,21 @@ export const disciplinesService = {
 
     return res.json();
   },
+
+  async update(id: string, data: Partial<CreateDisciplineRequest> & { status?: string }): Promise<DisciplineDTO> {
+      const response = await fetch(`${API_URL}/disciplines/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar la sanción');
+      }
+      const result = await response.json();
+      return result.data;
+    },
+  
 };
