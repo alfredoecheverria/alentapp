@@ -182,3 +182,10 @@ export interface CreateEnrollmentRequest {
     enrollment_date: string; // ISO Date String
     is_active: boolean;
 }
+
+export interface UpdateDisciplineRequest {
+  reason?: string;
+  start_date?: string; // ISO Date String
+  end_date?: string; // ISO Date String
+  is_total_suspension?: boolean;
+}

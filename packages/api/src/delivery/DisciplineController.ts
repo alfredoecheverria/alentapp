@@ -1,12 +1,14 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreateDisciplineUseCase } from '../application/CreateDisciplineUseCase.js';
-import { CreateDisciplineRequest } from '@alentapp/shared';
 import { GetDisciplinesUseCase } from '../application/GetDisciplinesUseCase.js';
+import { CreateDisciplineRequest, UpdateDisciplineRequest } from '@alentapp/shared';
+import { UpdateDisciplineUseCase } from '../application/UpdateDisciplineUseCase.js';
 
 export class DisciplineController {
     constructor(
         private readonly createDisciplineUseCase: CreateDisciplineUseCase,
         private readonly getDisciplinesUseCase: GetDisciplinesUseCase,
+        private readonly updateDisciplineUseCase: UpdateDisciplineUseCase,
     ) {}
 
     async getAll(_request: FastifyRequest, reply: FastifyReply) {
@@ -23,7 +25,8 @@ export class DisciplineController {
         reply: FastifyReply,
     ) {
         try {
-            const result = await this.createDisciplineUseCase.execute(request.body);
+            const body = request.body as CreateDisciplineRequest;
+            const result = await this.createDisciplineUseCase.execute(body);
 
             return reply.code(201).send({
                 message: 'Sancion creada correctamente',
@@ -46,6 +49,39 @@ export class DisciplineController {
             return reply.code(500).send({
                 message: 'Error interno, reintente más tarde'
             });
+        }
+    }
+
+    async update(
+        req: FastifyRequest<{ Params: { id: string }; Body: UpdateDisciplineRequest }>,
+        reply: FastifyReply,
+    ) {
+        try {
+            const { id } = req.params as { id: string };
+            const data = req.body as UpdateDisciplineRequest;
+
+            const result = await this.updateDisciplineUseCase.execute(id, data);
+
+            return reply.code(200).send(result);
+        } catch (err: any) {
+            if (err.message === "La sanción indicada no existe") {
+                return reply.code(404).send({ message: err.message });
+            }
+
+            if (err.message.includes("finalizada")) {
+                return reply.code(409).send({ message: err.message });
+            }
+            if (err.message.includes("Debe indicar")) {
+            return reply.code(400).send({ message: err.message });
+            }
+
+            if (err.message.err.message === "La fecha de fin debe ser posterior a la fecha de inicio") {
+            return reply.code(400).send({ message: err.message });
+            }
+
+            return reply
+            .code(500)
+            .send({ message: "Error interno, reintente más tarde" });
         }
     }
 }

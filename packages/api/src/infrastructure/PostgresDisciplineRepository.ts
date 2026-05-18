@@ -2,6 +2,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/client/client.js';
 import { DisciplineRepository } from '../domain/DisciplineRepository.js';
 import { CreateDisciplineRequest, DisciplineDTO, MemberDTO } from '@alentapp/shared';
+import { UpdateDisciplineRequest } from '../../../shared/index.js';
 
 if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is not set');
@@ -74,6 +75,22 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
 
         return disciplines.map(this.mapToDTO);
     }
+
+    async update(id: string, data: UpdateDisciplineRequest): Promise<DisciplineDTO> {
+        const discipline = await prisma.discipline.update({
+            where: { id },
+            data: {
+            ...(data.reason && { reason: data.reason }),
+            ...(data.start_date && { start_date: new Date(data.start_date) }),
+            ...(data.end_date && { end_date: new Date(data.end_date) }),
+            ...(data.is_total_suspension !== undefined && {
+                is_total_suspension: data.is_total_suspension,
+            }),
+            },
+        });
+
+        return this.mapToDTO(discipline);
+        }
 
     private mapToDTO(discipline: DBDiscipline): DisciplineDTO {
         return {

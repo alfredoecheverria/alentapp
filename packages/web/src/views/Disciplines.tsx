@@ -3,6 +3,7 @@ import {
   Button,
   Heading,
   HStack,
+  IconButton,
   Stack,
   Text,
   Box,
@@ -13,7 +14,7 @@ import {
   Checkbox,
 } from "@chakra-ui/react";
 
-import { LuPlus, LuRefreshCw } from "react-icons/lu";
+import { LuPlus, LuRefreshCw, LuPencil } from "react-icons/lu";
 import { useEffect, useState } from "react";
 
 import type {CreateDisciplineRequest, DisciplineDTO, MemberDTO,} from "@alentapp/shared";
@@ -52,6 +53,7 @@ export function DisciplinesView() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingDisciplineId, setEditingDisciplineId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CreateDisciplineRequest>({
     member_id: "",
@@ -97,6 +99,7 @@ export function DisciplinesView() {
   });
 
   const openCreateModal = () => {
+    setEditingDisciplineId(null);
     setFormData({
       member_id: "",
       reason: "",
@@ -108,19 +111,36 @@ export function DisciplinesView() {
     setIsDialogOpen(true);
   };
 
+  const openEditModal = (discipline: DisciplineDTO) => {
+    setEditingDisciplineId(discipline.id);
+    setFormData({
+      member_id: discipline.member_id,
+      reason: discipline.reason,
+      start_date: discipline.start_date,
+      end_date: discipline.end_date,
+      is_total_suspension: discipline.is_total_suspension,
+    });
+
+    setIsDialogOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setIsSubmitting(true);
 
     try {
-      await disciplinesService.create(formData);
+      if (editingDisciplineId) {
+        await disciplinesService.update(editingDisciplineId, formData);
+      } else {
+        await disciplinesService.create(formData);
+      }
 
       setIsDialogOpen(false);
-
+      setEditingDisciplineId(null);
       fetchDisciplines();
     } catch (err: any) {
-      alert(err.message || "Error al crear sanción");
+      alert(err.message || "Error al guardar la sanción");
     } finally {
       setIsSubmitting(false);
     }
@@ -166,7 +186,9 @@ export function DisciplinesView() {
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Crear nueva sanción</DialogTitle>
+              <DialogTitle>
+                {editingDisciplineId ? "Editar sanción" : "Crear nueva sanción"}
+              </DialogTitle>
             </DialogHeader>
 
             <DialogBody>
@@ -271,7 +293,7 @@ export function DisciplinesView() {
                 colorPalette="blue"
                 loading={isSubmitting}
               >
-                Crear sanción
+                {editingDisciplineId ? "Guardar Cambios" : "Crear sanción"}
               </Button>
             </DialogFooter>
 
@@ -351,6 +373,9 @@ export function DisciplinesView() {
                   <Table.ColumnHeader py="4">
                     Tipo
                   </Table.ColumnHeader>
+                  <Table.ColumnHeader py="4" textAlign="end">
+                    Acciones
+                  </Table.ColumnHeader>
                 </Table.Row>
               </Table.Header>
 
@@ -399,6 +424,18 @@ export function DisciplinesView() {
                           ? "Total"
                           : "Parcial"}
                       </Box>
+                    </Table.Cell>
+                    <Table.Cell textAlign="end">
+                      <HStack gap="2" justify="flex-end">
+                        <IconButton
+                          variant="ghost"
+                          size="sm"
+                          aria-label="Editar sanción"
+                          onClick={() => openEditModal(discipline)}
+                        >
+                          <LuPencil />
+                        </IconButton>
+                      </HStack>
                     </Table.Cell>
                   </Table.Row>
                 ))}
