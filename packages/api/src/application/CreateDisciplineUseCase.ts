@@ -6,7 +6,7 @@ import { CreateDisciplineRequest, DisciplineDTO } from "../../../shared/index.js
 export class CreateDisciplineUseCase {
     constructor(
         private readonly disciplineRepo: DisciplineRepository,
-        private readonly disciplineValidator: typeof DisciplineValidator,
+        private readonly disciplineValidator: DisciplineValidator,
         private readonly memberValidator: MemberValidator
     ) {}
 
@@ -16,8 +16,8 @@ export class CreateDisciplineUseCase {
 
         // Validamos las fechas
         this.disciplineValidator.validateDates(
-            new Date(data.start_date),
-            new Date(data.end_date)
+            data.start_date,
+            data.end_date
         );
 
         // Persistimos la sanción
