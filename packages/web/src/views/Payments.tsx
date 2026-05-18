@@ -15,7 +15,8 @@ import {
 import { LuPlus, LuRefreshCw, LuPencil, LuTrash2 } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import { paymentsService } from "../services/payments";
-import type { PaymentDTO, CreatePaymentRequest, PaymentStatus } from "@alentapp/shared";
+import { membersService } from "../services/members";
+import type { PaymentDTO, CreatePaymentRequest, PaymentStatus, MemberDTO } from "@alentapp/shared";
 import { 
   DialogRoot, 
   DialogContent, 
@@ -48,6 +49,7 @@ export function PaymentsView() {
   const [payments, setPayments] = useState<PaymentDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [members, setMembers] = useState<MemberDTO[]>([]);
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,6 +64,15 @@ export function PaymentsView() {
     year: 0,
     month: 0,
   });
+
+  const fetchMembers = async () => {
+    try {
+      const data = await membersService.getAll();
+      setMembers(data);
+    } catch (err: any) {
+      console.error("Error al cargar los miembros:", err.message || err);
+    }
+  }
 
   const fetchPayments = async () => {
     setIsLoading(true);
@@ -139,7 +150,13 @@ export function PaymentsView() {
 
   useEffect(() => {
     fetchPayments();
+    fetchMembers();
   }, []);
+
+  const getMemberName = (memberId: string) => {
+    const member = members.find(m => m.id === memberId);
+    return member ? member.name : "Desconocido";
+  };
 
   return (
     <DialogRoot open={isDialogOpen} onOpenChange={(e) => setIsDialogOpen(e.open)}>
@@ -161,7 +178,6 @@ export function PaymentsView() {
           </HStack>
         </Flex>
 
-        {/* Modal para agregar/editar pago */}
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
@@ -170,13 +186,28 @@ export function PaymentsView() {
             <DialogBody>
               <Stack gap="4">
 
-                <Field label="ID del Socio" required>
-                  <Input 
-                    placeholder="Ej. 12345678" 
+                <Field label="Socio" required>
+                  <select
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      border: "1px solid #3a3a3a",
+                      background: "#18181b",
+                      color: "white"
+                    }}
                     value={formData.member_id}
                     onChange={(e) => setFormData({ ...formData, member_id: e.target.value })}
                     required
-                  />
+                  >
+                    <option value="">Seleccione un socio...</option>
+                    {members.map((member) => (
+                      <option key={member.id} value={member.id}>
+                        {member.name} (DNI: {member.dni})
+                      </option>
+                    ))}
+
+                  </select>
                 </Field>
 
                 <Field label="Monto" required>
