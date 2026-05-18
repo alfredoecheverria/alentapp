@@ -22,6 +22,8 @@ export class UpdatePaymentUseCase {
             this.paymentValidator.validateStatusTransition(existingPayment.status, data.status);
         }
 
+        this.paymentValidator.validateStatusCancelled(existingPayment.status);
+
         if (data.amount !== undefined) this.paymentValidator.validateAmount(data.amount);
         if (data.year !== undefined) this.paymentValidator.validateYearRange(data.year);
         if (data.month !== undefined) this.paymentValidator.validateMonthRange(data.month);
