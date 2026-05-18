@@ -83,12 +83,31 @@ export class PaymentValidator {
     }
 
     //validacion de que el pago si esta pago no se pueda cambiar a pendiente o cancelado. Tampoco se puede cambiar de pendiente a cancelado.
+    // packages/api/src/domain/services/PaymentValidator.ts
+
     validateStatusTransition(currentStatus: PaymentStatus, newStatus: PaymentStatus): void {
-        if (currentStatus === 'Pago' && (newStatus === 'Pendiente' || newStatus === 'Cancelado')) {
-            throw new Error('No se puede cambiar el estado de un pago que ya fue pagado a Pendiente o Cancelado');
+        if (currentStatus === newStatus) return;
+
+        // Si está en Pago, no puede volver a Pendiente
+        if (currentStatus === 'Pago' && newStatus === 'Pendiente') {
+            throw new Error('No se puede cambiar el estado de un pago que ya fue pagado a Pendiente');
         }
-        if (currentStatus === 'Pendiente' && newStatus === 'Cancelado') {
-            throw new Error('No se puede cambiar el estado de un pago de Pendiente a Cancelado');
+
+        // Si está modificando, no puede pasar a Cancelado
+        if (newStatus === 'Cancelado') {
+            throw new Error('No se puede cancelar un pago desde la edición. Use el botón de eliminar.');
         }
-    }   
+
+        // Si ya está cancelado, es irreversible
+        if (currentStatus === 'Cancelado') {
+            throw new Error('Un pago cancelado no puede volver a modificarse');
+        }
+    }
+
+    // esta es para la "baja" 
+    validateStatusCancelled(currentStatus: PaymentStatus): void {
+        if (currentStatus === 'Cancelado') {
+            throw new Error('El pago ya se encuentra cancelado, no se puede realizar ninguna acción');
+        }    
+    }
 }

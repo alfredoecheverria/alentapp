@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreatePaymentUseCase } from '../application/CreatePaymentUseCase.js';
 import { GetPaymentUseCase } from '../application/GetPaymentUseCase.js';
 import { UpdatePaymentUseCase } from '../application/UpdatePaymentUseCase.js';
+import { DeletePaymentUseCase } from '../application/DeletePaymentUseCase.js';
 
 import { CreatePaymentRequest, UpdatePaymentRequest } from '@alentapp/shared/index.js';
 
@@ -10,6 +11,7 @@ export class PaymentController {
         private readonly createPaymentUseCase: CreatePaymentUseCase,
         private readonly getPaymentUseCase: GetPaymentUseCase,
         private readonly updatePaymentUseCase: UpdatePaymentUseCase,
+        private readonly deletePaymentUseCase: DeletePaymentUseCase
     ) {}
 
     async create(
@@ -42,6 +44,23 @@ export class PaymentController {
                     error: error.message,
                     stack: error.stack
                 });
+        }
+    }
+
+    async deletePayment(
+        request: FastifyRequest<{ Params: { id: string } }>,
+        reply: FastifyReply,
+    ) {
+        try {
+            const { id } = request.params;
+            await this.deletePaymentUseCase.execute(id);
+
+            return reply.status(204).send();
+        } catch (error: any) {
+            if (error.message === 'El pago no existe') {
+                return reply.status(400).send({ message: error.message });
+            }
+            return reply.status(500).send({ message: 'Error al procesar la operación' });
         }
     }
 
