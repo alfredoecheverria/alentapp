@@ -55,6 +55,14 @@ export class PostgresEnrollmentRepository implements EnrollmentRepository {
         return enrollments.map(this.mapToDTO);
     }
 
+    async findAll(): Promise<EnrollmentDTO[]> {
+        const enrollments = await prisma.enrollment.findMany({
+            orderBy: { id: 'desc' },
+        });
+
+        return enrollments.map(this.mapToDTO);
+    }
+
     private mapToDTO(enrollment: DBEnrollment): EnrollmentDTO {
         return {
             id: enrollment.id,
