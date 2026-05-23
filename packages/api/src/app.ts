@@ -27,6 +27,7 @@ import { SportController } from './delivery/SportController.ts'
 import { PostgresEnrollmentRepository } from './infrastructure/PostgresEnrollmentRepository.ts'
 import { EnrollmentValidator } from './domain/services/EnrollmentValidator.ts'
 import { CreateEnrollmentUseCase } from './application/CreateEnrollmentUseCase.ts'
+import { GetEnrollmentsUseCase } from './application/GetEnrollmentsUseCase.ts'
 import { EnrollmentController } from './delivery/EnrollmentController.ts'
 
 import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
@@ -136,7 +137,7 @@ export function buildApp() {
     server.post('/api/v1/equipment-loans', equipmentLoanController.create.bind(equipmentLoanController));
     server.put('/api/v1/equipment-loans/:id', equipmentLoanController.update.bind(equipmentLoanController));
     server.delete('/api/v1/equipment-loans/:id', equipmentLoanController.delete.bind(equipmentLoanController));
-    
+
     // SPORT
     const sportRepository = new PostgresSportRepository();
     const sportValidator = new SportValidator(sportRepository);
@@ -163,12 +164,15 @@ export function buildApp() {
     const enrollmentValidator = new EnrollmentValidator(enrollmentRepository, sportRepository);
 
     const createEnrollmentUseCase = new CreateEnrollmentUseCase(enrollmentRepository, enrollmentValidator);
+    const getEnrollmentsUseCase = new GetEnrollmentsUseCase(enrollmentRepository);
 
     const enrollmentController = new EnrollmentController(
         createEnrollmentUseCase,
+        getEnrollmentsUseCase,
     );
 
     server.post('/api/v1/enrollments', enrollmentController.create.bind(enrollmentController));
+    server.get('/api/v1/enrollments', enrollmentController.getAll.bind(enrollmentController));
 
     // LOCKER
     const lockerRepository = new PostgresLockerRepository();
