@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/client/client.js';
 import { EnrollmentRepository } from '../domain/EnrollmentRepository.ts';
-import { EnrollmentDTO, CreateEnrollmentRequest } from '@alentapp/shared';
+import { EnrollmentDTO, CreateEnrollmentRequest, UpdateEnrollmentRequest } from '@alentapp/shared';
 
 if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable not set')
@@ -15,7 +15,7 @@ type DBEnrollment = {
     id: string;
     member_id: string;
     sport_id: string;
-    enrollment_date: string;
+    enrollment_date: Date;
     is_active: boolean;
 }
 
@@ -47,6 +47,14 @@ export class PostgresEnrollmentRepository implements EnrollmentRepository {
         return enrollment ? this.mapToDTO(enrollment) : null;
     }
 
+    async findById(id: string): Promise<EnrollmentDTO | null> {
+        const enrollment = await prisma.enrollment.findUnique({
+            where: {id: id},
+        });
+
+        return enrollment ? this.mapToDTO(enrollment) : null;
+    }
+
     async findAllBySportId(id: string): Promise<EnrollmentDTO[]> {
         const enrollments = await prisma.enrollment.findMany({
             where: { sport_id: id }
@@ -61,6 +69,18 @@ export class PostgresEnrollmentRepository implements EnrollmentRepository {
         });
 
         return enrollments.map(this.mapToDTO);
+    }
+
+    async update(id: string, data: UpdateEnrollmentRequest): Promise<EnrollmentDTO> {
+        const enrollment = await prisma.enrollment.update({
+            where: { id: id },
+            data: {
+                ... (data.enrollment_date && {enrollment_date: new Date(data.enrollment_date)}),
+                ... ('is_active' in data && {is_active: data.is_active}),
+            },
+        });
+
+        return this.mapToDTO(enrollment);
     }
 
     private mapToDTO(enrollment: DBEnrollment): EnrollmentDTO {
