@@ -50,8 +50,8 @@ export interface PaymentDTO {
 }
 
 export interface CreatePaymentRequest {
-  member_id: string; 
-  amount: number; 
+  member_id: string;
+  amount: number;
   status: PaymentStatus;
   due_date: string;
   payment_date: string;
@@ -164,6 +164,13 @@ export interface CreateDisciplineRequest {
   is_total_suspension: boolean;
 }
 
+export interface UpdateDisciplineRequest {
+  reason?: string;
+  start_date?: string; // ISO Date String
+  end_date?: string; // ISO Date String
+  is_total_suspension?: boolean;
+}
+
 // ==========================================
 // Enrollment
 // ==========================================
@@ -183,9 +190,8 @@ export interface CreateEnrollmentRequest {
     is_active: boolean;
 }
 
-export interface UpdateDisciplineRequest {
-  reason?: string;
-  start_date?: string; // ISO Date String
-  end_date?: string; // ISO Date String
-  is_total_suspension?: boolean;
+export interface UpdateEnrollmentRequest {
+    enrollment_date?: string; // ISO Date String
+    is_active?: boolean;
 }
+
