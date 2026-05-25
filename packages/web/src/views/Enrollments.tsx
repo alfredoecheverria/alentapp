@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { enrollmentsService } from "../services/enrollments.ts";
 import { sportsService } from "../services/sports.ts";
 import { membersService } from "../services/members.ts";
-import type { EnrollmentDTO, CreateEnrollmentRequest } from "@alentapp/shared";
+import type { EnrollmentDTO, CreateEnrollmentRequest, UpdateEnrollmentRequest } from "@alentapp/shared";
 import type { SportDTO, MemberDTO } from "@alentapp/shared";
 import {
     DialogRoot,
@@ -132,7 +132,9 @@ export function EnrollmentsView() {
         setIsSubmitting(true);
         try {
             if (editingEnrollmentId) {
-                console.log("Not Implemented");
+                const finalData = { enrollment_date: formData.enrollment_date, is_active: formData.is_active};
+                console.log(finalData);
+                await enrollmentsService.update(editingEnrollmentId, finalData as UpdateEnrollmentRequest);
             } else {
                 await enrollmentsService.create(formData as CreateEnrollmentRequest);
             }
@@ -189,11 +191,12 @@ export function EnrollmentsView() {
             </DialogHeader>
             <DialogBody>
               <Stack gap="4">
-                <Field label="Socio" required>
+                <Field label="Socio" required={!editingEnrollmentId}>
                     <NativeSelect.Root>
                         <NativeSelect.Field
                             placeholder="Seleccione un Socio"
-                            required
+                            disabled={editingEnrollmentId}
+                            required={!editingEnrollmentId}
                             value={[formData.member_id]}
                             onChange={(e) => setFormData({ ...formData, member_id: e.target.value})}
                         >
@@ -206,11 +209,12 @@ export function EnrollmentsView() {
                         <NativeSelect.Indicator/>
                     </NativeSelect.Root>
                 </Field>
-                <Field label="Deporte" required>
+                <Field label="Deporte" required={!editingEnrollmentId}>
                     <NativeSelect.Root>
                         <NativeSelect.Field
                             placeholder="Seleccione un Deporte"
-                            required
+                            disabled={editingEnrollmentId}
+                            required={!editingEnrollmentId}
                             value={[formData.sport_id]}
                             onChange={(e) => setFormData({ ...formData, sport_id: e.target.value})}
                         >
@@ -223,12 +227,12 @@ export function EnrollmentsView() {
                         <NativeSelect.Indicator/>
                     </NativeSelect.Root>
                 </Field>
-                <Field label="Fecha de Inscripcion" required>
+                <Field label="Fecha de Inscripcion" required={!editingEnrollmentId}>
                     <Input
                     type="date"
                     value={formData.enrollment_date}
                     onChange={(e) => setFormData({ ...formData, enrollment_date: e.target.value })}
-                    required
+                    required={!editingEnrollmentId}
                     />
                 </Field>
                 <CheckboxRoot
@@ -287,8 +291,8 @@ export function EnrollmentsView() {
           <Table.Root size="md" variant="line" interactive>
             <Table.Header>
               <Table.Row bg="bg.muted/50">
-                <Table.ColumnHeader py="4">ID Socio</Table.ColumnHeader>
-                <Table.ColumnHeader py="4">ID Deporte</Table.ColumnHeader>
+                <Table.ColumnHeader py="4">Socio</Table.ColumnHeader>
+                <Table.ColumnHeader py="4">Deporte</Table.ColumnHeader>
                 <Table.ColumnHeader py="4">Fecha de Inscripcion</Table.ColumnHeader>
                 <Table.ColumnHeader py="4">Activa?</Table.ColumnHeader>
                 <Table.ColumnHeader py="4" textAlign="end">Acciones</Table.ColumnHeader>
