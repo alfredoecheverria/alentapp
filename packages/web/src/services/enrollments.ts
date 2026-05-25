@@ -18,4 +18,13 @@ export const enrollmentsService = {
         const result = await response.json();
         return result.data;
     },
+
+    async getAll(): Promise<EnrollmentDTO[]> {
+        const response = await fetch(`${API_URL}/enrollments`);
+        if (!response.ok) {
+            throw new Error('Error al obtener las inscripciones');
+        }
+        const result = await response.json();
+        return result.data;
+    },
 }
