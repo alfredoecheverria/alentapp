@@ -37,7 +37,6 @@ export class EnrollmentController {
             const enrollments = await this.getEnrollmentsUseCase.execute();
             return reply.status(200).send({ data: enrollments });
         } catch (error: any) {
-            console.log(error);
             return reply.status(500).send({ error: error.message });
         }
     }
@@ -61,8 +60,7 @@ export class EnrollmentController {
             || error.message.includes('No se puede editar el deporte asociado')) {
                 return reply.status(409).send({ error: error.message });
             }
-            //return reply.status(500).send({ error: 'Error interno, reintente más tarde'})
-            return reply.status(500).send({ error: error.message})
+            return reply.status(500).send({ error: 'Error interno, reintente más tarde'})
         }
     }
 
