@@ -83,6 +83,12 @@ export class PostgresEnrollmentRepository implements EnrollmentRepository {
         return this.mapToDTO(enrollment);
     }
 
+    async delete(id: string): Promise<void> {
+        await prisma.enrollment.delete({
+            where: { id: id },
+        });
+    }
+
     private mapToDTO(enrollment: DBEnrollment): EnrollmentDTO {
         return {
             id: enrollment.id,
