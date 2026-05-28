@@ -133,7 +133,6 @@ export function EnrollmentsView() {
         try {
             if (editingEnrollmentId) {
                 const finalData = { enrollment_date: formData.enrollment_date, is_active: formData.is_active};
-                console.log(finalData);
                 await enrollmentsService.update(editingEnrollmentId, finalData as UpdateEnrollmentRequest);
             } else {
                 await enrollmentsService.create(formData as CreateEnrollmentRequest);
@@ -144,6 +143,17 @@ export function EnrollmentsView() {
             alert(err.message || "Error al guardar la inscripcion");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteEnrollment = async (id: string) => {
+        if (window.confirm(`¿Estás seguro de que deseas eliminar esta inscripción? Esta acción no se puede deshacer.`)) {
+            try {
+                await enrollmentsService.delete(id);
+                fetchEnrollments(); // Refresh the list
+            } catch (err: any) {
+                alert(err.message || "Error al eliminar la inscripción");
+            }
         }
     };
 
@@ -339,7 +349,7 @@ export function EnrollmentsView() {
                         size="sm"
                         colorPalette="red"
                         aria-label="Eliminar inscripción"
-                        onClick={() => /*handleDeleteSport(sport.id, sport.name)*/ console.log("Not Implemented")}
+                        onClick={() => handleDeleteEnrollment(enrollment.id)}
                       >
                         <LuTrash2 />
                       </IconButton>
