@@ -43,4 +43,14 @@ export const enrollmentsService = {
         const result = await response.json();
         return result.data;
     },
+
+    async delete(id: string): Promise<void> {
+        const response = await fetch(`${API_URL}/enrollments/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error al eliminar la inscripción');
+        }
+    },
 }

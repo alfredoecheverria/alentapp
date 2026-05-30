@@ -36,7 +36,6 @@ export class SportController {
             const sports = await this.getSportsUseCase.execute();
             return reply.status(200).send({ data: sports });
         } catch (error: any) {
-            console.log(sports);
             return reply.status(500).send({ error: error.message });
         }
     }

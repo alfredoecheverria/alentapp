@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreateEnrollmentUseCase } from '../application/CreateEnrollmentUseCase.ts'
 import { GetEnrollmentsUseCase } from '../application/GetEnrollmentsUseCase.ts'
 import { UpdateEnrollmentUseCase } from '../application/UpdateEnrollmentUseCase.ts'
+import { DeleteEnrollmentUseCase } from '../application/DeleteEnrollmentUseCase.ts'
 import { CreateEnrollmentRequest, UpdateEnrollmentRequest } from '@alentapp/shared'
 
 export class EnrollmentController {
@@ -9,6 +10,7 @@ export class EnrollmentController {
         private readonly createEnrollmentUseCase: CreateEnrollmentUseCase,
         private readonly getEnrollmentsUseCase: GetEnrollmentsUseCase,
         private readonly updateEnrollmentUseCase: UpdateEnrollmentUseCase,
+        private readonly deleteEnrollmentUseCase: DeleteEnrollmentUseCase,
     ) {}
 
     async create(
@@ -35,7 +37,6 @@ export class EnrollmentController {
             const enrollments = await this.getEnrollmentsUseCase.execute();
             return reply.status(200).send({ data: enrollments });
         } catch (error: any) {
-            console.log(error);
             return reply.status(500).send({ error: error.message });
         }
     }
@@ -59,8 +60,23 @@ export class EnrollmentController {
             || error.message.includes('No se puede editar el deporte asociado')) {
                 return reply.status(409).send({ error: error.message });
             }
-            //return reply.status(500).send({ error: 'Error interno, reintente más tarde'})
-            return reply.status(500).send({ error: error.message})
+            return reply.status(500).send({ error: 'Error interno, reintente más tarde'})
+        }
+    }
+
+    async delete(
+        request: FastifyRequest<{Params: { id: string}}>,
+        reply: FastifyReply
+    ) {
+        try {
+            const { id } = request.params;
+            await this.deleteEnrollmentUseCase.execute(id);
+            return reply.status(204).send();
+        } catch (error: any) {
+            if (error.message.includes('La inscripción no existe')) {
+                return reply.status(404).send({ error: error.message });
+            }
+            return reply.status(500).send({ error: 'error del motor de base de datos'});
         }
     }
 }

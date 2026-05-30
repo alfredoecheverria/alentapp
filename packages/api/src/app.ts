@@ -29,6 +29,7 @@ import { EnrollmentValidator } from './domain/services/EnrollmentValidator.ts'
 import { CreateEnrollmentUseCase } from './application/CreateEnrollmentUseCase.ts'
 import { GetEnrollmentsUseCase } from './application/GetEnrollmentsUseCase.ts'
 import { UpdateEnrollmentUseCase } from './application/UpdateEnrollmentUseCase.ts'
+import { DeleteEnrollmentUseCase } from './application/DeleteEnrollmentUseCase.ts'
 import { EnrollmentController } from './delivery/EnrollmentController.ts'
 
 import { PostgresLockerRepository } from './infrastructure/PostgresLockerRepository.js';
@@ -167,16 +168,19 @@ export function buildApp() {
     const createEnrollmentUseCase = new CreateEnrollmentUseCase(enrollmentRepository, enrollmentValidator);
     const getEnrollmentsUseCase = new GetEnrollmentsUseCase(enrollmentRepository);
     const updateEnrollmentUseCase = new UpdateEnrollmentUseCase(enrollmentRepository, enrollmentValidator);
+    const deleteEnrollmentUseCase = new DeleteEnrollmentUseCase(enrollmentRepository, enrollmentValidator);
 
     const enrollmentController = new EnrollmentController(
         createEnrollmentUseCase,
         getEnrollmentsUseCase,
         updateEnrollmentUseCase,
+        deleteEnrollmentUseCase,
     );
 
     server.post('/api/v1/enrollments', enrollmentController.create.bind(enrollmentController));
     server.get('/api/v1/enrollments', enrollmentController.getAll.bind(enrollmentController));
     server.put('/api/v1/enrollments/:id', enrollmentController.update.bind(enrollmentController));
+    server.delete('/api/v1/enrollments/:id', enrollmentController.delete.bind(enrollmentController));
 
     // LOCKER
     const lockerRepository = new PostgresLockerRepository();
