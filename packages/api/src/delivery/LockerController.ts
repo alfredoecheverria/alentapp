@@ -34,7 +34,7 @@ export class LockerController {
                 return reply.status(400).send({ error: msg });
             }
 
-            if (msg === '`member_id` no válido') {
+            if (msg === 'member_id no válido') {
                 return reply.status(400).send({ error: msg });
             }
 
