@@ -112,7 +112,6 @@ export function SportsView() {
         alert(err.message || "Error al eliminar el deporte");
       }
     }
-    console.log("Not Implemented");
   };
 
   useEffect(() => {
