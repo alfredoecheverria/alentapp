@@ -109,5 +109,15 @@ describe('PaymentValidator', () => {
                 validator.validateStatusTransition('Pago', 'Cancelado')
             ).toThrow('No se puede cancelar un pago desde la edición. Use el botón de eliminar.');
         });
+
+        it('debe lanzar un error si el estado actual ya es Cancelado (es irreversible)', () => {
+            expect(() => 
+                validator.validateStatusTransition('Cancelado', 'Pendiente')
+            ).toThrow('Un pago cancelado no puede volver a modificarse');
+
+            expect(() => 
+                validator.validateStatusTransition('Cancelado', 'Pago')
+            ).toThrow('Un pago cancelado no puede volver a modificarse');
+        });
     });
 });

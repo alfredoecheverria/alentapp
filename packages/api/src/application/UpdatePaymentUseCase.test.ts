@@ -11,7 +11,7 @@ describe('UpdatePaymentUseCase', () => {
         update: vi.fn(),
     } as unknown as PaymentRepository;
 
-    // ACTUALIZADO: Añadimos todas las funciones que usa el caso de uso
+
     const mockPaymentValidator = {
         validateStatusTransition: vi.fn(),
         validateStatusCancelled: vi.fn(),
@@ -42,8 +42,6 @@ describe('UpdatePaymentUseCase', () => {
         vi.mocked(mockPaymentValidator.validateAmount).mockReturnValue(undefined);
         vi.mocked(mockMemberRepo.findById).mockResolvedValue({ id: 'member-1', name: 'Socio Test' } as any);
     });
-
-    // ... el resto de tus bloques it() permanecen igual
     
     it('debe lanzar error si el pago no existe', async () => {
         vi.mocked(mockPaymentRepo.findById).mockResolvedValueOnce(null);

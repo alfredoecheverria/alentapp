@@ -161,4 +161,41 @@ describe('PaymentController', () => {
             expect(mockReply.send).toHaveBeenCalledWith({ error: 'Error interno, reintente más tarde' });
         });
     });
+
+    //test para eliminar un pago (baja lógica)
+    describe('deletePayment', () => {
+        
+        it('debe devolver status 204 No Content si la baja lógica del pago es exitosa', async () => {
+            mockDeleteUseCase.execute.mockResolvedValueOnce(undefined);
+            const mockDeleteRequest = { ...mockRequest, params: { id: '1' } };
+            
+            await controller.deletePayment(mockDeleteRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(204);
+            expect(mockReply.send).toHaveBeenCalledWith(); 
+        });
+
+        it('debe devolver status 400 Bad Request si el pago que se intenta eliminar no existe', async () => {
+            const mockDeleteRequest = { ...mockRequest, params: { id: '1' } };
+            
+            mockDeleteUseCase.execute.mockRejectedValueOnce(new Error('El pago no existe'));
+            
+            await controller.deletePayment(mockDeleteRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(400);
+            expect(mockReply.send).toHaveBeenCalledWith({ message: 'El pago no existe' });
+        });
+
+        it('debe devolver status 500 Internal Server Error si ocurre un error inesperado', async () => {
+            const mockDeleteRequest = { ...mockRequest, params: { id: '1' } };
+            
+            mockDeleteUseCase.execute.mockRejectedValueOnce(new Error('Database crashed'));
+            
+            await controller.deletePayment(mockDeleteRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(500);
+            expect(mockReply.send).toHaveBeenCalledWith({ message: 'Error al procesar la operación' });
+        });
+    });
+    
 });
