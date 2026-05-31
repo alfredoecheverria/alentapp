@@ -221,14 +221,14 @@ export function PaymentsView() {
                 </Field>
                 <Field label="Mes Correspondiente al Pago" required>
                   <Input 
-                    placeholder="Ej. 2023" 
+                    placeholder="Ej. 11" 
                     type="number"
                     value={formData.month}
                     onChange={(e) => setFormData({ ...formData, month: parseInt(e.target.value) || 0 })}
                     required
                   />
                 </Field>
-                <Field label="Año Correspondiente alPago" required>
+                <Field label="Año Correspondiente al Pago" required>
                   <Input 
                     placeholder="Ej. 2023" 
                     type="number"

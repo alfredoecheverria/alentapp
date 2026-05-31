@@ -83,8 +83,6 @@ export class PaymentValidator {
     }
 
     //validacion de que el pago si esta pago no se pueda cambiar a pendiente o cancelado. Tampoco se puede cambiar de pendiente a cancelado.
-    // packages/api/src/domain/services/PaymentValidator.ts
-
     validateStatusTransition(currentStatus: PaymentStatus, newStatus: PaymentStatus): void {
         if (currentStatus === newStatus) return;
 
