@@ -2,6 +2,9 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { CreateLockerRequest } from '@alentapp/shared';
 
+const existingMemberId = '705e6567-e97b-41d1-a012-453204174000';
+const nonExistingMemberId = '705e6567-e97b-41d1-a012-453204174001';
+
 
 vi.mock('../infrastructure/PostgresLockerRepository.js', () => {
     return {
@@ -17,6 +20,34 @@ vi.mock('../infrastructure/PostgresLockerRepository.js', () => {
             async findByNumber(number: number) {
                 return number === 1
                     ? { id: 'locker-2', number: 1, location: 'Gimnasio', status: 'Available' }
+                    : null;
+            }
+            async findById(id: string) {
+                if (id === 'locker-1') {
+                    return { id: 'locker-1', number: 1, location: 'Gimnasio', status: 'Available', member_id: undefined };
+                }
+                return null;
+            }
+            async update(id: string, data: any) {
+                return {
+                    id,
+                    number: data.number ?? 1,
+                    location: data.location ?? 'Gimnasio',
+                    status: data.status ?? 'Available',
+                    member_id: data.member_id === undefined ? undefined : data.member_id,
+                    ...data
+                };
+            }
+        }
+    };
+});
+
+vi.mock('../infrastructure/PostgresMemberRepository.js', () => {
+    return {
+        PostgresMemberRepository: class {
+            async findById(id: string) {
+                return id === existingMemberId
+                    ? { id: existingMemberId, name: 'Miembro Existente', dni: '12345678', email: 'test@mate.com', birthdate: '1990-01-01' }
                     : null;
             }
         }
@@ -93,6 +124,58 @@ describe('Locker API Integration Tests', () => {
             expect(response.statusCode).toBe(400);
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('member_id no válido');
+        });
+    });
+
+    describe('PUT /api/v1/lockers/:id', () => {
+        it('debe actualizar un locker existente y retornar 200', async () => {
+            const payload = {
+                number: 2,
+                location: 'Natatorio',
+                status: 'Occupied',
+                member_id: existingMemberId
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/lockers/locker-1',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.payload);
+            expect(body.data).toBeTruthy();
+            expect(body.data.number).toBe(2);
+            expect(body.data.location).toBe('Natatorio');
+            expect(body.data.member_id).toBe(existingMemberId);
+        });
+
+        it('debe retornar 404 si el locker no existe', async () => {
+            const payload = { location: 'Cancha 1' };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/lockers/locker-9',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(404);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El locker no existe');
+        });
+
+        it('debe retornar 404 si el member indicado no existe', async () => {
+            const payload = { member_id: nonExistingMemberId };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/lockers/locker-1',
+                payload,
+            });
+
+            expect(response.statusCode).toBe(404);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El miembro indicado no existe');
         });
     });
 });
