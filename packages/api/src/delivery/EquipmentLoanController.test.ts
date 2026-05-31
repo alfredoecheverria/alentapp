@@ -154,4 +154,34 @@ describe('EquipmentLoanController', () => {
             expect(mockReply.send).toHaveBeenCalledWith({ error: 'Solo se permite realizar prestamos a miembros con categoria Senior o Lifetime' });
         });
     });
+
+    describe('delete', () => {
+        it('debe devolver status 204 si la eliminación es exitosa', async () => {
+            mockDeleteUseCase.execute.mockResolvedValueOnce(undefined);
+            
+            const mockDeleteRequest = {
+                ...mockRequest,
+                params: { id: '1' }
+            };
+
+            await controller.delete(mockDeleteRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(204);
+            expect(mockReply.send).toHaveBeenCalledWith();
+        });
+
+        it('debe devolver status 400 si el prestamo no existe', async () => {
+            mockDeleteUseCase.execute.mockRejectedValueOnce(new Error('El préstamo de equipamiento solicitado no existe'));
+            
+            const mockDeleteRequest = {
+                ...mockRequest,
+                params: { id: 'nonexistent-id' }
+            };
+
+            await controller.delete(mockDeleteRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(400);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'El préstamo de equipamiento solicitado no existe' });
+        });
+    });
 });
