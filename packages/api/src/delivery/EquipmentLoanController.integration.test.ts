@@ -20,6 +20,13 @@ vi.mock('../infrastructure/PostgresEquipmentLoanRepository.js', () => {
             async update(id: string, data: any) {
                 return { id, ...data };
             }
+
+            async delete(id: string) {
+                if (id === 'nonexistent-loan-id') {
+                    return null;
+                }
+                return { id };
+            }
         }
     };
 });
@@ -236,6 +243,28 @@ describe('EquipmentLoan API Integration Tests', () => {
             expect(response.statusCode).toBe(404);
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('El usuario no existe');
+        });
+    });
+
+    describe('DELETE /api/v1/equipment-loans/:id', () => {
+        it('debe retornar 204 y eliminar el préstamo de equipamiento', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/equipment-loans/1'
+            });
+
+            expect(response.statusCode).toBe(204);
+        });
+
+        it('debe retornar 400 si el préstamo no existe', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/equipment-loans/nonexistent-loan-id'
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El préstamo de equipamiento solicitado no existe');
         });
     });
 });
