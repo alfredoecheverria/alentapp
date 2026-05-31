@@ -27,7 +27,7 @@ export class SportController {
             if (error.message.includes('Capacidad máxima inválida') || error.message.includes('El valor de precio adicional debe ser un numero igual o mayor a 0')) {
                 return reply.status(400).send({ error: error.message });
             }
-            return reply.status(500).send({ error: error.message });
+            return reply.status(500).send({ error: 'Error interno, reintente más tarde'});
         }
     }
 
@@ -55,7 +55,7 @@ export class SportController {
                 return reply.status(400).send({ error: error.message });
             }
 
-            return reply.status(500).send({ error: error.message });
+            return reply.status(500).send({ error: 'Error interno, reintente más tarde' });
         }
     }
 
