@@ -81,4 +81,33 @@ describe('PaymentValidator', () => {
             expect(() => validator.validateMonthRange(13)).toThrow('El mes 13 es inválido. Debe estar entre 1 y 12');
         });
     });
+
+    //valida la transicion de estados (no se puede volver a Pendiente, no se puede cambiar a Cancelado desde la edición, un pago Cancelado no puede modificarse)
+    describe('validateStatusTransition', () => {
+        it('debe pasar correctamente si los estados son iguales', () => {
+            expect(() => validator.validateStatusTransition('Pendiente', 'Pendiente')).not.toThrow();
+            expect(() => validator.validateStatusTransition('Pago', 'Pago')).not.toThrow();
+            expect(() => validator.validateStatusTransition('Cancelado', 'Cancelado')).not.toThrow();
+        });
+
+        it('debe pasar correctamente en una transición válida (de Pendiente a Pago)', () => {
+            expect(() => validator.validateStatusTransition('Pendiente', 'Pago')).not.toThrow();
+        });
+
+        it('debe lanzar un error si intenta cambiar de Pago a Pendiente', () => {
+            expect(() => 
+                validator.validateStatusTransition('Pago', 'Pendiente')
+            ).toThrow('No se puede cambiar el estado de un pago que ya fue pagado a Pendiente');
+        });
+
+        it('debe lanzar un error si intenta cambiar el nuevo estado a Cancelado', () => {
+            expect(() => 
+                validator.validateStatusTransition('Pendiente', 'Cancelado')
+            ).toThrow('No se puede cancelar un pago desde la edición. Use el botón de eliminar.');
+            
+            expect(() => 
+                validator.validateStatusTransition('Pago', 'Cancelado')
+            ).toThrow('No se puede cancelar un pago desde la edición. Use el botón de eliminar.');
+        });
+    });
 });
