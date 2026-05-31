@@ -4,7 +4,7 @@ import { SportRepository } from '../domain/SportRepository.ts'
 import { SportValidator } from '../domain/services/SportValidator.ts'
 import { UpdateSportRequest } from '@alentapp/shared'
 
-describe('CreateSportUseCase', () => {
+describe('UpdateSportUseCase', () => {
     // Creo mocks de las dependencias
     const mockSportRepository = {
         update: vi.fn(),
