@@ -39,4 +39,35 @@ test.describe('Lockers Full-Stack E2E', () => {
     await expect(page.getByText('Available', { exact: true })).toBeVisible();
     await expect(page.getByText('Sin asignar')).toBeVisible();
   });
+
+  test('debe editar un locker real y ver el cambio en la tabla', async ({ page }) => {
+    await page.goto('/lockers');
+
+    // Crear un locker real para editarlo luego
+    await page.locator('button:has-text("Agregar Locker")').click();
+    await expect(page.getByText('Agregar Nuevo Locker')).toBeVisible();
+
+    await page.getByLabel('Número').fill('21');
+    await page.getByPlaceholder('Ej. Natatorio').fill('Sector Sur');
+    await page.getByRole('button', { name: 'Agregar Locker' }).last().click();
+
+    await expect(page.getByText('21')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Sector Sur')).toBeVisible();
+
+    // Abrir el modal de edición de la fila del locker recién creado
+    await page.locator('tr', { hasText: '21' }).getByLabel('Editar locker').click();
+    await expect(page.getByText('Editar Locker')).toBeVisible();
+
+    // Cambiar datos visibles
+    await page.getByLabel('Número').fill('22');
+    await page.getByPlaceholder('Ej. Natatorio').fill('Sector Este');
+
+    // Guardar los cambios
+    await page.getByRole('button', { name: 'Guardar Cambios' }).click();
+
+    // Verificar que el cambio quedó visible en la tabla
+    await expect(page.getByText('22')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Sector Este')).toBeVisible();
+    await expect(page.getByText('Sector Sur')).toBeHidden();
+  });
 });
