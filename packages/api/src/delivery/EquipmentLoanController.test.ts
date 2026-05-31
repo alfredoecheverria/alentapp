@@ -76,4 +76,82 @@ describe('EquipmentLoanController', () => {
             expect(mockReply.send).toHaveBeenCalledWith({ error: 'Error interno, reintente más tarde' });
         });
     });
+
+    describe('update', () => {
+        it('debe devolver status 200 y los datos si la actualización es exitosa', async () => {
+            const mockLoan = { id: '1', item_name: 'item-name' };
+            mockUpdateUseCase.execute.mockResolvedValueOnce(mockLoan);
+            
+            const mockUpdateRequest = {
+                ...mockRequest,
+                params: { id: '1' },
+                body: { item_name: 'updated-item-name' }
+            };
+
+            await controller.update(mockUpdateRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(200);
+            expect(mockReply.send).toHaveBeenCalledWith({ data: mockLoan });
+        });
+
+        it('debe devolver status 404 si el prestamo no existe', async () => {
+            mockUpdateUseCase.execute.mockRejectedValueOnce(new Error('El préstamo de equipamiento solicitado no existe'));
+            
+            const mockUpdateRequest = {
+                ...mockRequest,
+                params: { id: 'nonexistent-id' },
+                body: { item_name: 'updated-item-name' }
+            };
+
+            await controller.update(mockUpdateRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(404);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'El préstamo de equipamiento solicitado no existe' });
+        });
+
+        it('debe devolver status 404 si el miembro no existe', async () => {
+            mockUpdateUseCase.execute.mockRejectedValueOnce(new Error('El usuario no existe'));
+            
+            const mockUpdateRequest = {
+                ...mockRequest,
+                params: { id: '1' },
+                body: { member_id: 'nonexistent-member-id' }
+            };
+
+            await controller.update(mockUpdateRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(404);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'El usuario no existe' });
+        });
+
+        it('debe devolver status 400 si la fecha de prestamo es posterior a la fecha de devolucion', async () => {
+            mockUpdateUseCase.execute.mockRejectedValueOnce(new Error('Fecha prestamo no puede ser posterior a Fecha Devolucion'));
+            
+            const mockUpdateRequest = {
+                ...mockRequest,
+                params: { id: '1' },
+                body: { loan_date: '2023-01-10', due_date: '2023-01-01' }
+            };
+
+            await controller.update(mockUpdateRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(400);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'Fecha prestamo no puede ser posterior a Fecha Devolucion' });
+        });
+
+        it('debe devolver status 400 si el miembro tiene categoria Cadete', async () => {
+            mockUpdateUseCase.execute.mockRejectedValueOnce(new Error('Solo se permite realizar prestamos a miembros con categoria Senior o Lifetime'));
+            
+            const mockUpdateRequest = {
+                ...mockRequest,
+                params: { id: '1' },
+                body: { member_id: 'cadete-member-id' }
+            };
+
+            await controller.update(mockUpdateRequest as any, mockReply as any);
+            
+            expect(mockReply.status).toHaveBeenCalledWith(400);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'Solo se permite realizar prestamos a miembros con categoria Senior o Lifetime' });
+        });
+    });
 });

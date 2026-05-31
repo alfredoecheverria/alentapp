@@ -9,6 +9,17 @@ vi.mock('../infrastructure/PostgresEquipmentLoanRepository.js', () => {
             async create(data: any) { 
                 return { id: '2', ...data }; 
             }
+
+            async findById(id: string) {
+                if (id === 'nonexistent-loan-id') {
+                    return null;
+                }
+                return { id, item_name: 'Pelota de Futbol', member_id: 'member-id' };
+            }
+
+            async update(id: string, data: any) {
+                return { id, ...data };
+            }
         }
     };
 });
@@ -128,6 +139,103 @@ describe('EquipmentLoan API Integration Tests', () => {
             expect(response.statusCode).toBe(400);
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('Solo se permite realizar prestamos a miembros con categoria Senior o Lifetime');
+        });
+    });
+
+    describe('PUT /api/v1/equipment-loans/:id', () => {
+        it('debe retornar 200 y actualizar el préstamo de equipamiento', async () => {
+            const payload = {
+                item_name: 'Raqueta de Tenis',
+                loan_date: '2023-02-01',
+                due_date: '2023-02-10',
+                member_id: 'member-id'
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/equipment-loans/1',
+                payload
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.payload);
+            expect(body.data.item_name).toBe('Raqueta de Tenis');
+        });
+
+        it('debe retornar 404 si el préstamo no existe', async () => {
+            const payload = {
+                item_name: 'Raqueta de Tenis',
+                loan_date: '2023-02-01',
+                due_date: '2023-02-10',
+                member_id: 'member-id'
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/equipment-loans/nonexistent-loan-id',
+                payload
+            });
+
+            expect(response.statusCode).toBe(404);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El préstamo de equipamiento solicitado no existe');
+        });
+
+        it('debe retornar 400 si la fecha de prestamo es posterior a la fecha de devolucion', async () => {
+            const payload = {
+                item_name: 'Raqueta de Tenis',
+                loan_date: '2023-02-10',
+                due_date: '2023-02-01',
+                member_id: 'member-id'
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/equipment-loans/1',
+                payload
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('Fecha prestamo no puede ser posterior a Fecha Devolucion');
+        });
+
+        it('debe retornar 400 si el miembro tiene categoria Cadete', async () => {
+            const payload = {
+                item_name: 'Raqueta de Tenis',
+                loan_date: '2023-02-01',
+                due_date: '2023-02-10',
+                member_id: 'cadete-member-id'
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/equipment-loans/1',
+                payload
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('Solo se permite realizar prestamos a miembros con categoria Senior o Lifetime');
+        });
+        
+        it('debe retornar 404 si el miembro no existe', async () => {
+            const payload = {
+                item_name: 'Raqueta de Tenis',
+                loan_date: '2023-02-01',
+                due_date: '2023-02-10',
+                member_id: 'nonexistent-member-id'
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/equipment-loans/1',
+                payload
+            });
+
+            expect(response.statusCode).toBe(404);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El usuario no existe');
         });
     });
 });
