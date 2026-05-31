@@ -70,4 +70,31 @@ test.describe('Lockers Full-Stack E2E', () => {
     await expect(page.getByText('Sector Este')).toBeVisible();
     await expect(page.getByText('Sector Sur')).toBeHidden();
   });
+
+
+  test('debe eliminar el locker creado y remover su fila', async ({ page }) => {
+    await page.goto('/lockers');
+
+    // Crear un locker real para eliminarlo luego
+    await page.locator('button:has-text("Agregar Locker")').click();
+    await expect(page.getByText('Agregar Nuevo Locker')).toBeVisible();
+
+    await page.getByLabel('Número').fill('31');
+    await page.getByPlaceholder('Ej. Natatorio').fill('Zona Borrado');
+    await page.getByRole('button', { name: 'Agregar Locker' }).last().click();
+
+    await expect(page.getByText('31')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Zona Borrado')).toBeVisible();
+
+    // Aceptar el confirm del navegador automáticamente
+    page.on('dialog', (dialog) => dialog.accept());
+
+    // Eliminar el locker recién creado
+    await page.locator('tr', { hasText: '31' }).getByLabel('Eliminar locker').click();
+
+    // Verificar que la fila eliminada ya no exista
+    await expect(page.locator('tr', { hasText: '31' })).toHaveCount(0);
+    await expect(page.getByText('Zona Borrado')).toHaveCount(0);
+  });
+  
 });
