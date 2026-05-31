@@ -21,7 +21,7 @@ describe('CreateEquipmentLoanUseCase', () => {
         vi.clearAllMocks();
     });
 
-    it('debe crear un préstamo de equipo exitosamente si el socio es elegible y el equipo está disponible', async () => {
+    it('debe crear un préstamo de equipo exitosamente si el socio es elegible y el equipo con estado loaned', async () => {
         const mockRequest: CreateEquipmentLoanRequest = {
             member_id: 'member-123',
             equipment_id: 'equipment-456',
