@@ -21,7 +21,7 @@ describe('EquipmentLoanValidator', () => {
         vi.clearAllMocks();
     });
 
-//
+
     describe('validateLoanMemberExists', () => {
         it('debe pasar si el miembro no existe en la base de datos', async () => {
             vi.mocked(mockMemberRepo.findById).mockResolvedValue(null);
@@ -29,7 +29,7 @@ describe('EquipmentLoanValidator', () => {
             expect(mockMemberRepo.findById).toHaveBeenCalledWith('nonexistent-member-id');
         });
     });
-//
+
     describe('validateMemberCategoryForLoan', () => {
         it('debe pasar si el miembro tiene categoria Senior o Lifetime', async () => {
             vi.mocked(mockMemberRepo.findById).mockResolvedValue({ id: 'member-id', category: 'Senior' });
@@ -43,7 +43,7 @@ describe('EquipmentLoanValidator', () => {
             expect(mockMemberRepo.findById).toHaveBeenCalledWith('member-id');
         });
     });
-//
+
     describe('validateLoanDates', () => {
         it('debe pasar si la fecha de prestamo es anterior a la fecha de devolucion', () => {
             expect(() => validator.validateLoanDates('2023-01-01', '2023-01-10')).not.toThrow();
@@ -57,4 +57,18 @@ describe('EquipmentLoanValidator', () => {
             expect(() => validator.validateLoanDates('2023-01-01', '2023-01-01')).toThrow('Fecha prestamo no puede ser posterior a Fecha Devolucion');
         });
     });
+
+    describe('validateLoanExists', () => {
+       it('debe pasar si el préstamo de equipamiento existe en la base de datos', async () => {
+           vi.mocked(mockEquipmentLoanRepo.findById).mockResolvedValue({ id: 'loan-id' });
+           await expect(validator.validateLoanExists('loan-id')).resolves.toBeUndefined();
+           expect(mockEquipmentLoanRepo.findById).toHaveBeenCalledWith('loan-id');
+       });
+  
+       it('debe lanzar error si el préstamo de equipamiento no existe en la base de datos', async () => {
+           vi.mocked(mockEquipmentLoanRepo.findById).mockResolvedValue(null);
+           await expect(validator.validateLoanExists('nonexistent-loan-id')).rejects.toThrow('El préstamo de equipamiento solicitado no existe');
+           expect(mockEquipmentLoanRepo.findById).toHaveBeenCalledWith('nonexistent-loan-id');
+       });
+   });
 });

@@ -66,6 +66,10 @@ export class EquipmentLoanController {
                 return reply.status(404).send({ error: error.message });
             }
 
+            if (error.message.includes('El préstamo de equipamiento solicitado no existe')) {
+                return reply.status(404).send({ error: error.message });
+            }
+
             if (error.message.includes('Fecha prestamo no puede ser posterior a Fecha Devolucion')) {
                 return reply.status(400).send({ error: error.message });
             }
