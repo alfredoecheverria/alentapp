@@ -144,4 +144,43 @@ describe('LockerController', () => {
             expect(mockReply.send).toHaveBeenCalledWith({ error: 'Error interno, reintente más tarde' });
         });
     });
+
+    describe('delete', () => {
+        it('debe devolver status 204 si la eliminación es exitosa', async () => {
+            mockDeleteUseCase.execute.mockResolvedValueOnce(undefined);
+
+            await controller.delete(mockRequest as any, mockReply as any);
+
+            expect(mockDeleteUseCase.execute).toHaveBeenCalledWith('123');
+            expect(mockReply.status).toHaveBeenCalledWith(204);
+            expect(mockReply.send).toHaveBeenCalledWith();
+        });
+
+        it('debe devolver status 404 si el locker no existe', async () => {
+            mockDeleteUseCase.execute.mockRejectedValueOnce(new Error('El locker no existe'));
+
+            await controller.delete(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(404);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'El locker no existe' });
+        });
+
+        it('debe devolver status 422 si el locker tiene member asignado', async () => {
+            mockDeleteUseCase.execute.mockRejectedValueOnce(new Error('No se puede eliminar un locker con member asignado'));
+
+            await controller.delete(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(422);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'No se puede eliminar un locker con member asignado' });
+        });
+
+        it('debe devolver status 500 ante un error generico', async () => {
+            mockDeleteUseCase.execute.mockRejectedValueOnce(new Error('Error de conexion de Prisma...'));
+
+            await controller.delete(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(500);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'Error interno, reintente más tarde' });
+        });
+    });
 });

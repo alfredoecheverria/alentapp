@@ -26,6 +26,9 @@ vi.mock('../infrastructure/PostgresLockerRepository.js', () => {
                 if (id === 'locker-1') {
                     return { id: 'locker-1', number: 1, location: 'Gimnasio', status: 'Available', member_id: undefined };
                 }
+                if (id === 'locker-2') {
+                    return { id: 'locker-with-member', number: 9, location: 'Tatami', status: 'Occupied', member_id: existingMemberId };
+                }
                 return null;
             }
             async update(id: string, data: any) {
@@ -38,6 +41,7 @@ vi.mock('../infrastructure/PostgresLockerRepository.js', () => {
                     ...data
                 };
             }
+            async delete(id: string) { return; }
         }
     };
 });
@@ -176,6 +180,40 @@ describe('Locker API Integration Tests', () => {
             expect(response.statusCode).toBe(404);
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('El miembro indicado no existe');
+        });
+    });
+
+    describe('DELETE /api/v1/lockers/:id', () => {
+        it('debe retornar 204 si se elimina correctamente', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/lockers/locker-1',
+            });
+
+            expect(response.statusCode).toBe(204);
+            expect(response.payload).toBe('');
+        });
+
+        it('debe retornar 404 si el locker no existe', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/lockers/locker-9',
+            });
+
+            expect(response.statusCode).toBe(404);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El locker no existe');
+        });
+
+        it('debe retornar 422 si el locker tiene miembro asignado', async () => {
+            const response = await app.inject({
+                method: 'DELETE',
+                url: '/api/v1/lockers/locker-2',
+            });
+
+            expect(response.statusCode).toBe(422);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('No se puede eliminar un locker con member asignado');
         });
     });
 });
