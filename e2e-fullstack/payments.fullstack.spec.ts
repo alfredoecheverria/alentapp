@@ -110,4 +110,46 @@ test.describe('Payments Full-Stack E2E', () => {
 
     await expect(updatedRow.getByText('100', { exact: true })).toBeHidden();
   });
+
+  test('debe cancelar un pago y ver el estado Cancelado en la tabla', async ({ page }) => {
+    const uniqueDni = `7${Date.now().toString().slice(-7)}`;
+
+    const memberResponse = await page.request.post('http://localhost:3001/api/v1/socios', {
+      data: {
+        name: 'Socio Delete E2E',
+        dni: uniqueDni,
+        email: `socio.delete.${uniqueDni}@alentapp.test`,
+        birthdate: '1990-03-15',
+        category: 'Pleno'
+      }
+    });
+    const member = await memberResponse.json();
+    createdMemberIds.push(member.data.id);
+
+    const paymentResponse = await page.request.post('http://localhost:3001/api/v1/payments', {
+      data: {
+        member_id: member.data.id,
+        amount: 200,
+        due_date: '2026-05-30',
+        payment_date: '2026-05-29',
+        status: 'Pago',
+        month: 5,
+        year: 2026
+      }
+    });
+    expect(paymentResponse.status()).toBe(201);
+
+    await page.goto('/payments');
+
+    const row = page.getByRole('row').filter({ has: page.getByText(member.data.id) });
+    await expect(row).toBeVisible({ timeout: 10000 });
+
+    page.on('dialog', async (dialog) => await dialog.accept());
+
+    await row.getByRole('button', { name: /Eliminar pago/i }).click();
+
+    const cancelledRow = page.getByRole('row').filter({ has: page.getByText(member.data.id) });
+    await expect(cancelledRow).toBeVisible({ timeout: 10000 });
+    await expect(cancelledRow).toContainText('Cancelado');
+  });
 });
