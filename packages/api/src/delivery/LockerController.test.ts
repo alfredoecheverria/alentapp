@@ -1,0 +1,107 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { LockerController } from './LockerController.js';
+
+describe('LockerController', () => {
+    // 1. Mocks de los Casos de Uso
+    const mockCreateUseCase = { execute: vi.fn() };
+    const mockGetUseCase = { execute: vi.fn() };
+    const mockUpdateUseCase = { execute: vi.fn() };
+    const mockDeleteUseCase = { execute: vi.fn() };
+
+    const controller = new LockerController(
+        mockCreateUseCase as any,
+        mockGetUseCase as any,
+        mockUpdateUseCase as any,
+        mockDeleteUseCase as any
+    );
+
+    // 2. Mocks de Fastify Request y Reply
+    const mockReply = {
+        status: vi.fn().mockReturnThis(),
+        send: vi.fn()
+    };
+
+    const mockRequest = {
+        log: { info: vi.fn() },
+        body: { number: 1, location: 'Gimnasio' },
+        params: { id: '123' }
+    };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    describe('create', () => {
+        it('debe devolver status 201 y los datos si la creacion es exitosa', async () => {
+            const mockLocker = { id: '1', number: 1, location: 'Gimnasio', status: 'Available' };
+            mockCreateUseCase.execute.mockResolvedValueOnce(mockLocker);
+
+            await controller.create(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(201);
+            expect(mockReply.send).toHaveBeenCalledWith({ data: mockLocker });
+        });
+
+        it('debe devolver status 409 si el numero ya existe', async () => {
+            mockCreateUseCase.execute.mockRejectedValueOnce(new Error('Ya existe un locker con ese número'));
+
+            await controller.create(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(409);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'Ya existe un locker con ese número' });
+        });
+
+        it('debe devolver status 400 Bad Request si el number no es entero y mayor a cero', async () => {
+            mockCreateUseCase.execute.mockRejectedValueOnce(new Error('number debe ser entero y mayor a cero'));
+
+            await controller.create(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(400);
+        });
+
+        it('debe devolver status 400 Bad Request si el member_id es no valido', async () => {
+            mockCreateUseCase.execute.mockRejectedValueOnce(new Error('member_id no válido'));
+
+            await controller.create(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(400);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'member_id no válido' });
+        });
+
+        it('debe devolver status 404 si el miembro indicado no existe', async () => {
+            mockCreateUseCase.execute.mockRejectedValueOnce(new Error('El miembro indicado no existe'));
+
+            await controller.create(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(404);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'El miembro indicado no existe' });
+        });
+
+        it('debe devolver status 422 si el miembro ya posee un locker', async () => {
+            mockCreateUseCase.execute.mockRejectedValueOnce(new Error('El miembro ya posee un locker'));
+
+            await controller.create(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(422);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'El miembro ya posee un locker' });
+        });
+
+        it('debe devolver status 422 si el estado y member_id no son compatibles', async () => {
+            mockCreateUseCase.execute.mockRejectedValueOnce(new Error('Estado Occupied requiere member_id'));
+
+            await controller.create(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(422);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'Estado Occupied requiere member_id' });
+        });
+
+        it('debe devolver status 500 para cualquier otro error', async () => {
+            mockCreateUseCase.execute.mockRejectedValueOnce(new Error('Error de conexion de Prisma...'));
+
+            await controller.create(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(500);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'Error interno, reintente más tarde' });
+        });
+    });
+});
