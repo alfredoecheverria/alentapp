@@ -104,4 +104,44 @@ describe('LockerController', () => {
             expect(mockReply.send).toHaveBeenCalledWith({ error: 'Error interno, reintente más tarde' });
         });
     });
+
+    describe('update', () => {
+        it('debe devolver status 200 y los datos actualizados', async () => {
+            const mockLocker = { id: '123', number: 2, location: 'Tatami' };
+            mockUpdateUseCase.execute.mockResolvedValueOnce(mockLocker);
+
+            await controller.update(mockRequest as any, mockReply as any);
+
+            expect(mockUpdateUseCase.execute).toHaveBeenCalledWith('123', { number: 1, location: 'Gimnasio' });
+            expect(mockReply.status).toHaveBeenCalledWith(200);
+            expect(mockReply.send).toHaveBeenCalledWith({ data: mockLocker });
+        });
+
+        it('debe devolver status 409 si ya existe el numero', async () => {
+            mockUpdateUseCase.execute.mockRejectedValueOnce(new Error('Ya existe un locker con ese número'));
+
+            await controller.update(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(409);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'Ya existe un locker con ese número' });
+        });
+
+        it('debe devolver status 404 si no existe el locker', async () => {
+            mockUpdateUseCase.execute.mockRejectedValueOnce(new Error('El locker no existe'));
+
+            await controller.update(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(404);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'El locker no existe' });
+        });
+
+        it('debe devolver status 500 por error generico', async () => {
+            mockUpdateUseCase.execute.mockRejectedValueOnce(new Error('Error de conexion de Prisma...'));
+
+            await controller.update(mockRequest as any, mockReply as any);
+
+            expect(mockReply.status).toHaveBeenCalledWith(500);
+            expect(mockReply.send).toHaveBeenCalledWith({ error: 'Error interno, reintente más tarde' });
+        });
+    });
 });
