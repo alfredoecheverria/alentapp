@@ -1,12 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { buildApp } from '../app.js';
-import { CreatePaymentRequest } from '@alentapp/shared';
+import { CreatePaymentRequest, UpdatePaymentRequest } from '@alentapp/shared';
 
 vi.mock('../infrastructure/PostgresPaymentRepository.js', () => {
     return {
         PostgresPaymentRepository: class {
             async create(data: any) { return { id: '1', ...data }; }
+            async findAll() { return []; }
+            async update(id: string, data: any) { return { id, member_id: '1', due_date: '2026-05-30', payment_date: '2026-05-29', amount: 100, status: 'Pendiente', year: 2026, month: 5, ...data}; }
+            async findById(id: string) { return id === '999' ? null : { id, member_id: '1', amount: 100, due_date: '2026-05-30', payment_date: '2026-05-29', status: 'Pendiente', year: 2026, month: 5 }; }
+            async findByMemberId(memberId: string) { return []; }
         }
     };
 });
@@ -99,4 +103,68 @@ describe('Payment API Integration Tests', () => {
             expect([400, 500]).toContain(response.statusCode);
         });
     });
+
+    describe('PUT /api/v1/payment/:id', () => {
+        it('debe retornar 200 y actualizar el pago', async () => {
+            const payload: UpdatePaymentRequest = {
+                amount: 150,
+                due_date: '2026-06-30',
+                payment_date: '2026-06-29',
+                status: 'Pago',
+                year: 2026,
+                month: 6
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/payments/1',
+                payload
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.payload);
+            expect(body.data.amount).toBe(150);
+        });
+
+        it('debe retornar 400 si el estado a modificar es Cancelado', async () => {
+            const payload: UpdatePaymentRequest = {
+                member_id: '1',
+                amount: 150,
+                due_date: '2026-06-30',
+                payment_date: '2026-06-29',
+                status: 'Cancelado', //no se puede modificar el estado de un pago a cancelado
+                year: 2026,
+                month: 6
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/payments/1',
+                payload
+            });
+
+            expect([400, 500]).toContain(response.statusCode);
+        });
+
+        it('debe retornar 404 si el pago no existe', async () => {
+            const payload: UpdatePaymentRequest = {
+                member_id: '1',
+                amount: 150,
+                due_date: '2026-06-30',
+                payment_date: '2026-06-29',
+                status: 'Pago',
+                year: 2026,
+                month: 6
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/payments/999', 
+                payload
+            });
+
+            expect(response.statusCode).toBe(404);
+        });
+    });
+
 });

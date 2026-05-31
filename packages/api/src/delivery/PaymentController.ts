@@ -40,10 +40,21 @@ export class PaymentController {
         } catch (error: any) {
             console.error(error);
 
-                return reply.status(500).send({
-                    error: error.message,
-                    stack: error.stack
-                });
+            if (error.message.includes('El pago no existe')) {
+                return reply.status(404).send({ error: error.message });
+            }
+            if (
+                error.message.includes('inválido') || 
+                error.message.includes('No se puede') || 
+                error.message.includes('irreversible') ||
+                error.message.includes('volver a modificarse')
+            ) {
+                return reply.status(400).send({ error: error.message });
+            }
+
+            return reply.status(500).send({
+                error: "Error interno, reintente más tarde"
+            });
         }
     }
 
