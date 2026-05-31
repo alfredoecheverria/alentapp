@@ -55,4 +55,43 @@ test.describe('Payments Full-Stack E2E', () => {
     await expect(row).toContainText('2026-05-29');
     await expect(row).toContainText('Pago');
   });
+
+  test('debe editar el pago creado y ver los cambios en la tabla', async ({ page }) => {
+    await page.goto('/payments');
+
+    // 1. Filtrar e identificar la fila del pago creado anteriormente (Buscamos la fila que contiene el monto '100')
+    const row = page.getByRole('row').filter({ has: page.getByText('100') });
+    await expect(row).toBeVisible({ timeout: 10000 });
+
+    // 2. Hacer clic en el botón de Editar (IconButton con aria-label="Editar pago")
+    await row.getByRole('button', { name: /Editar pago/i }).click();
+
+    // 3. Verificar que el modal cambie su título dinámicamente a "Editar Pago"
+    await expect(page.getByText('Editar Pago')).toBeVisible();
+
+    // 4. Modificar los campos del formulario utilizando el orden de inputs del Frontend
+    // Cambiamos el Monto de 100 a 150 (Primer input de tipo número: índice 0)
+    await page.locator('input[type="number"]').nth(0).fill('150');
+
+    // Cambiamos el Mes de 5 a 6 (Segundo input de tipo número: índice 1)
+    await page.locator('input[type="number"]').nth(1).fill('6');
+
+    // Nota: Mantenemos el año en 2026 para que no rompa las validaciones de rango temporal de tu Backend
+
+    // 5. Enviar el formulario haciendo clic en "Actualizar Pago"
+    await page.getByRole('button', { name: 'Actualizar Pago' }).click();
+
+    // 6. Asegurar que el modal se cierre correctamente
+    await expect(page.getByRole('button', { name: 'Actualizar Pago' })).toBeHidden();
+
+    // 7. Aserciones finales: Validar que la fila se haya actualizado en la tabla real
+    const updatedRow = page.getByRole('row').filter({ has: page.getByText('150') });
+    await expect(updatedRow).toBeVisible();
+    await expect(updatedRow).toContainText('150'); // Nuevo Monto
+    await expect(updatedRow).toContainText('6');   // Nuevo Mes
+    await expect(updatedRow).toContainText('2026');
+    
+    // Verificamos que los datos viejos ('100' y mes '5') ya no existan en esa fila exacta
+    await expect(updatedRow.getByText('100', { exact: true })).toBeHidden();
+  });
 });
