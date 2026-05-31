@@ -23,4 +23,19 @@ test.describe('Sports E2E Full-Stack Tests', () => {
         await expect(page.getByText('Test E2E Fullstack')).toBeVisible({ timeout: 10000 });
         await expect(page.getByText('Descripcion de Prueba')).toBeVisible();
     });
+
+    test('debe modificar un deporte y verlo reflejado en la tabla', async ({ page }) => {
+        await page.goto('/sports');
+
+        await expect(page.getByText('Test E2E Fullstack')).toBeVisible({ timeout: 10000 });
+        await page.getByRole('button', { name: 'Editar deporte' }).first().click();
+        await expect(page.getByText('Editar Deporte')).toBeVisible();
+
+        await page.getByPlaceholder('Ej. Arte marcial full-contact de origen chino').fill('Cambio de Prueba');
+        await page.getByRole('button', { name: 'Guardar Cambios' }).click();
+        await expect(page.getByRole('button', { name: 'Guardar Cambios' })).toBeHidden();
+
+        await expect(page.getByText('Cambio de Prueba')).toBeVisible({ timeout: 10000 });
+        await expect(page.getByText('Descripcion de Prueba', { exact: true })).toBeHidden();
+    })
 })

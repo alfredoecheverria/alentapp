@@ -1,4 +1,4 @@
-import { CreateSportRequest } from '@alentapp/shared';
+import { CreateSportRequest, UpdateSportRequest } from '@alentapp/shared';
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 
@@ -54,7 +54,7 @@ describe('Sport API Integration Tests', () => {
         });
 
         it('debe pasar las validación y retornar 409 si el nombre ya existe', async () => {
-            const payload: CreateMemberRequest = {
+            const payload: CreateSportRequest = {
                 name: 'Deporte Existente',
                 description: 'Deporte de pelota',
                 max_capacity: 5,
@@ -73,7 +73,7 @@ describe('Sport API Integration Tests', () => {
         });
 
         it('debe retornar 400 si la capacidad es <= 0', async () => {
-            const payload: CreateMemberRequest = {
+            const payload: CreateSportRequest = {
                 name: 'Basketball',
                 description: 'Deporte de pelota',
                 max_capacity: -1,
@@ -92,7 +92,7 @@ describe('Sport API Integration Tests', () => {
         });
 
         it('debe retornar 400 si el precio adicional es < 0', async () => {
-            const payload: CreateMemberRequest = {
+            const payload: CreateSportRequest = {
                 name: 'Basketball',
                 description: 'Deporte de pelota',
                 max_capacity: 4,
@@ -109,6 +109,77 @@ describe('Sport API Integration Tests', () => {
             expect(response.statusCode).toBe(400);
             const body = JSON.parse(response.payload);
             expect(body.error).toBe('El valor de precio adicional debe ser un numero igual o mayor a 0');
+        });
+    });
+
+    describe('PUT api/v1/sports/:id', () => {
+        it('debe retornar 200 OK y actualizar el deporte', async () => {
+            const payload: UpdateSportRequest = {
+                description: 'Deporte modificado',
+                max_capacity: 10,
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/sports/1',
+                payload
+            });
+
+            expect(response.statusCode).toBe(200);
+            const body = JSON.parse(response.payload);
+            expect(body.data.description).toBe('Deporte modificado');
+            expect(body.data.id).toBeDefined();
+        });
+
+        it('debe retornar 400 Bad Request si la descripcion esta presente y es vacia', async () => {
+            const payload: UpdateSportRequest = {
+                description: '',
+                max_capacity: 10,
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/sports/1',
+                payload
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('Descripción de deporte inválida')
+        });
+
+        it('debe retornar 400 Bad Request si el deporte no existe', async () => {
+            const payload: UpdateSportRequest = {
+                description: 'Descripción de prueba',
+                max_capacity: 10,
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/sports/5',
+                payload
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('El deporte no existe')
+        });
+
+        it('debe retornar 400 Bad Request si la capacidad maxima es <= a 0', async () => {
+            const payload: UpdateSportRequest = {
+                description: 'Descripción de prueba',
+                max_capacity: -10,
+            };
+
+            const response = await app.inject({
+                method: 'PUT',
+                url: '/api/v1/sports/1',
+                payload
+            });
+
+            expect(response.statusCode).toBe(400);
+            const body = JSON.parse(response.payload);
+            expect(body.error).toBe('Capacidad máxima inválida')
         });
     });
 });
