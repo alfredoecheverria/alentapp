@@ -187,7 +187,7 @@ test.describe('Equipment Loans Full-Stack E2E', () => {
  });
 
 
-  test.afterAll(async ({ request }) => {
+  test.afterEach(async ({ request }) => {
     try {
       const loansResponse = await request.get('http://localhost:3001/api/v1/equipment-loans');
       if (loansResponse.status() === 200) {
@@ -197,7 +197,6 @@ test.describe('Equipment Loans Full-Stack E2E', () => {
           for (const loan of loansData.data) {
             await request.delete(`http://localhost:3001/api/v1/equipment-loans/${loan.id}`);
           }
-          console.log('[E2E EquipmentLoan Cleanup] Todos los préstamos activos fueron removidos.');
         }
       }
     } catch (error) {
@@ -208,7 +207,6 @@ test.describe('Equipment Loans Full-Stack E2E', () => {
     for (const memberId of createdMemberIds) {
       try {
         const response = await request.delete(`http://localhost:3001/api/v1/socios/${memberId}`);
-        console.log(`[E2E EquipmentLoan Cleanup] Socio ${memberId} borrado correctamente. Status: ${response.status()}`);
       } catch (error) {
         console.error(`[E2E EquipmentLoan Cleanup] No se pudo limpiar el socio ${memberId}:`, error);
       }
