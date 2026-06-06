@@ -3,10 +3,11 @@ import { test, expect } from '@playwright/test';
 test.describe('Payments Full-Stack E2E', () => {
   let createdMemberIds: string[] = [];
 
-  test.afterAll(async ({ request }) => {
-    for (const id of createdMemberIds) {
-      await request.delete(`http://localhost:3001/api/v1/socios/${id}`);
-    }
+  test.afterEach(async ({ request }) => {
+    const deletePromises = createdMemberIds.map(id =>
+      request.delete(`http://localhost:3001/api/v1/socios/${id}`)
+    );
+    await Promise.all(deletePromises);
     createdMemberIds = [];
   });
 
