@@ -9,12 +9,10 @@ import pg from 'pg';
  * Usamos `page.request` únicamente para preparar un socio válido antes
  * de entrar a la vista de sanciones.
  *
- * Lo nombro con Z porque los tests de members esperan una DB vacía al arrancar, y discipline crea un socio!
- *
  */
 
 /**
- * Función auxiliar para limpiar la base de datos
+ * Función auxiliar para limpiar la base de datos al finalizar.
  */
 const DB_URL = 'postgresql://admin:password123@localhost:5433/alentapp_test_db';
 
