@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 /**
  * Tests E2E Full-Stack para la vista de Lockers.
@@ -11,6 +11,37 @@ import { test, expect } from '@playwright/test';
  * por lo que cada test empieza desde un estado conocido y limpio.
  */
 
+async function createLockerDirectly(page: Page, number: number, location: string) {
+  const response = await page.request.post('http://localhost:3001/api/v1/lockers', {
+    data: {
+      number,
+      location,
+    },
+  });
+
+  expect(response.status()).toBe(201);
+  return response.json();
+}
+
+async function deleteLockerDirectly(page: Page, lockerId: string): Promise<void> {
+  const response = await page.request.delete(`http://localhost:3001/api/v1/lockers/${lockerId}`);
+
+  expect(response.status()).toBe(204);
+}
+
+async function deleteLockerByNumber(page: Page, lockerNumber: number): Promise<void> {
+  const response = await page.request.get('http://localhost:3001/api/v1/lockers');
+
+  expect(response.status()).toBe(200);
+
+  const body = await response.json();
+  const locker = body.data.find((item: { id: string; number: number }) => item.number === lockerNumber);
+
+  if (locker) {
+    await deleteLockerDirectly(page, locker.id);
+  }
+}
+
 test.describe('Lockers Full-Stack E2E', () => {
 
   test('debe mostrar el estado vacío cuando no hay lockers en la DB', async ({ page }) => {
@@ -19,82 +50,79 @@ test.describe('Lockers Full-Stack E2E', () => {
   });
 
   test('debe crear un locker real y mostrarlo en la tabla', async ({ page }) => {
-    await page.goto('/lockers');
+    const lockerNumber = 12;
 
-    // Abrir dialog de creación
-    await page.locator('button:has-text("Agregar Locker")').click();
-    await expect(page.getByText('Agregar Nuevo Locker')).toBeVisible();
+    try {
+      await page.goto('/lockers');
 
-    // Llenar formulario con datos reales
-    await page.getByLabel('Número').fill('12');
-    await page.getByPlaceholder('Ej. Natatorio').fill('Sector Norte');
+      // Abrir dialog de creación
+      await page.locator('button:has-text("Agregar Locker")').click();
+      await expect(page.getByText('Agregar Nuevo Locker')).toBeVisible();
 
-    // Guardar
-    await page.getByRole('button', { name: 'Agregar Locker' }).last().click();
+      // Llenar formulario con datos reales
+      await page.getByLabel('Número').fill(String(lockerNumber));
+      await page.getByPlaceholder('Ej. Natatorio').fill('Sector Norte');
 
-    // Esperar que el dialog se cierre y el locker aparezca en la tabla real
-    await expect(page.getByText('Agregar Nuevo Locker')).toBeHidden();
-    await expect(page.getByText('12')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Sector Norte')).toBeVisible();
-    await expect(page.getByText('Available', { exact: true })).toBeVisible();
-    await expect(page.getByText('Sin asignar')).toBeVisible();
+      // Guardar
+      await page.getByRole('button', { name: 'Agregar Locker' }).last().click();
+
+      // Esperar que el dialog se cierre y el locker aparezca en la tabla real
+      await expect(page.getByText('Agregar Nuevo Locker')).toBeHidden();
+      await expect(page.getByText(String(lockerNumber))).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('Sector Norte')).toBeVisible();
+      await expect(page.getByText('Available', { exact: true })).toBeVisible();
+      await expect(page.getByText('Sin asignar')).toBeVisible();
+    } finally {
+      await deleteLockerByNumber(page, lockerNumber);
+    }
   });
 
   test('debe editar un locker real y ver el cambio en la tabla', async ({ page }) => {
-    await page.goto('/lockers');
+    const lockerNumber = Number(`${Date.now().toString().slice(-5)}1`);
+    const locker = await createLockerDirectly(page, lockerNumber, 'Sector Sur');
 
-    // Crear un locker real para editarlo luego
-    await page.locator('button:has-text("Agregar Locker")').click();
-    await expect(page.getByText('Agregar Nuevo Locker')).toBeVisible();
+    try {
+      await page.goto('/lockers');
+      await expect(page.getByText(String(lockerNumber))).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('Sector Sur')).toBeVisible();
 
-    await page.getByLabel('Número').fill('21');
-    await page.getByPlaceholder('Ej. Natatorio').fill('Sector Sur');
-    await page.getByRole('button', { name: 'Agregar Locker' }).last().click();
+      // Abrir el modal de edición de la fila del locker recién creado
+      await page.locator('tr', { hasText: String(lockerNumber) }).getByLabel('Editar locker').click();
+      await expect(page.getByText('Editar Locker')).toBeVisible();
 
-    await expect(page.getByText('21')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Sector Sur')).toBeVisible();
+      // Cambiar datos visibles
+      await page.getByLabel('Número').fill('22');
+      await page.getByPlaceholder('Ej. Natatorio').fill('Sector Este');
 
-    // Abrir el modal de edición de la fila del locker recién creado
-    await page.locator('tr', { hasText: '21' }).getByLabel('Editar locker').click();
-    await expect(page.getByText('Editar Locker')).toBeVisible();
+      // Guardar los cambios
+      await page.getByRole('button', { name: 'Guardar Cambios' }).click();
 
-    // Cambiar datos visibles
-    await page.getByLabel('Número').fill('22');
-    await page.getByPlaceholder('Ej. Natatorio').fill('Sector Este');
-
-    // Guardar los cambios
-    await page.getByRole('button', { name: 'Guardar Cambios' }).click();
-
-    // Verificar que el cambio quedó visible en la tabla
-    await expect(page.getByText('22')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Sector Este')).toBeVisible();
-    await expect(page.getByText('Sector Sur')).toBeHidden();
+      // Verificar que el cambio quedó visible en la tabla
+      await expect(page.getByText('22')).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('Sector Este')).toBeVisible();
+      await expect(page.getByText('Sector Sur')).toBeHidden();
+    } finally {
+      await deleteLockerDirectly(page, locker.data.id);
+    }
   });
 
 
   test('debe eliminar el locker creado y remover su fila', async ({ page }) => {
+    const lockerNumber = Number(`${Date.now().toString().slice(-5)}2`);
+    await createLockerDirectly(page, lockerNumber, 'Zona Borrado');
+
     await page.goto('/lockers');
-
-    // Crear un locker real para eliminarlo luego
-    await page.locator('button:has-text("Agregar Locker")').click();
-    await expect(page.getByText('Agregar Nuevo Locker')).toBeVisible();
-
-    await page.getByLabel('Número').fill('31');
-    await page.getByPlaceholder('Ej. Natatorio').fill('Zona Borrado');
-    await page.getByRole('button', { name: 'Agregar Locker' }).last().click();
-
-    await expect(page.getByText('31')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(String(lockerNumber))).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Zona Borrado')).toBeVisible();
 
     // Aceptar el confirm del navegador automáticamente
     page.on('dialog', (dialog) => dialog.accept());
 
     // Eliminar el locker recién creado
-    await page.locator('tr', { hasText: '31' }).getByLabel('Eliminar locker').click();
+    await page.locator('tr', { hasText: String(lockerNumber) }).getByLabel('Eliminar locker').click();
 
     // Verificar que la fila eliminada ya no exista
-    await expect(page.locator('tr', { hasText: '31' })).toHaveCount(0);
+    await expect(page.locator('tr', { hasText: String(lockerNumber) })).toHaveCount(0);
     await expect(page.getByText('Zona Borrado')).toHaveCount(0);
   });
-  
 });
