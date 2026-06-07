@@ -1,4 +1,4 @@
-# Diseño Propuesto: packages/api/Dockerfile.prod
+# Diseño Propuesto: `packages/api/Dockerfile.prod`
 ## Propósito
 
 El objetivo de este archivo es construir una imagen optimizada para el entorno de producción de la API, diferenciándose críticamente de una configuración de desarrollo.
@@ -21,49 +21,49 @@ La imagen resultante debe cumplir con las siguientes características:
 
 
 ## Estructura General: Multi-Stage Build
-El proceso de construcción se divide en un flujo de 3 etapas (multi-stage build) utilizando como imagen base común node:22-alpine:
+El proceso de construcción se divide en un flujo de 3 etapas (multi-stage build) utilizando como imagen base común `node:22-alpine`:
 
 - Stage 1 (deps): Instala solo dependencias de producción
-       
-- Stage 2 (build): Transpila TypeScript y genera JS (dist/)
-       
+
+- Stage 2 (build): Transpila TypeScript y genera JS (`dist/`)
+
 - Stage 3 (runtime): Junta dependencias instaladas en el stage 1 y el codigo js generado en el paso 2, añade usuario no-root
 
 ### Stage 1 — deps
-Base: node:22-alpine
+Base: `node:22-alpine`
 
 Propósito: Instalar exclusivamente las dependencias necesarias para la ejecución en producción.
 
 Comando clave: `npm ci --omit=dev`
 
-¿Por qué es necesario? 
+¿Por qué es necesario?
 Mantiene la imagen final lo más pequeña posible, evita trasladar dependencias de desarrollo (como linters o herramientas de testing) al servidor.
 
 ### Stage 2 — build
-Base: node:22-alpine
+Base: `node:22-alpine`
 Propósito: Transpilar el código fuente escrito en TypeScript y generar los archivos en JavaScript.
 
-Flujo: Copia de manifiestos, instalación de dependencias de desarrollo y producción (npm ci), copia de la carpeta src/ y ejecución de npm run build (o npx tsc).
-Resultado: El artefacto compilado listo para producción (usualmente la carpeta dist/).
+Flujo: Copia de manifiestos, instalación de dependencias de desarrollo y producción (`npm ci`), copia de la carpeta `src/` y ejecución de `npm run build` (o `npx tsc`).
+Resultado: El artefacto compilado listo para producción (la carpeta `dist/`).
 
 ¿Por qué es necesario? La etapa de build genera los artefactos JavaScript que serán ejecutados por Node.js. Mantener la compilación separada evita incluir el código fuente y las dependencias de desarrollo en la imagen de producción.
 
 ### Stage 3 — runtime
-Base: node:22-alpine
+Base: `node:22-alpine`
 
 Propósito: La etapa final y la única que realmente se despliega. Su única tarea es ejecutar la API.
 
 Pasos a realizar:
 
-   - Incluir la carpeta dist/ generada en el Stage 2 (build).
+   - Incluir la carpeta `dist/` generada en el Stage 2 (build).
 
-   - Incluir los node_modules limpios del Stage 1 (deps).
+   - Incluir los node_modules limpios del Stage 1 (`deps`).
 
-   - Incluir archivos mínimos de configuración obligatorios (package.json, esquemas de Prisma, etc.).
+   - Incluir archivos mínimos de configuración obligatorios (`package.json`, esquemas de Prisma, etc.).
 
    - Configura el entorno bajo el usuario node.
 
-   - Implementa un HEALTHCHECK que verifica periódicamente la disponibilidad de la aplicación mediante solicitudes HTTP a http://localhost:3000.
+   - Implementa un HEALTHCHECK que verifica periódicamente la disponibilidad de la aplicación mediante solicitudes HTTP a `http://localhost:3000`.
 
 ¿Por qué es necesario? Al aislar el entorno de ejecución de la lógica de construcción, el contenedor se vuelve sumamente ligero, rápido en escalar y mucho más seguro ante posibles vulnerabilidades.
 
@@ -79,7 +79,7 @@ Pasos a realizar:
 | Optimizacion de cache | Reutilización de capas de dependencias cuando package.json no cambia  |
 
 
-# Diseño Propuesto: packages/web/Dockerfile.prod
+# Diseño Propuesto: `packages/web/Dockerfile.prod`
 
 ## Propósito
 
@@ -150,7 +150,7 @@ Esta arquitectura permite obtener una imagen final más pequeña, segura y efici
 | Cache de assets     | `Cache-Control: max-age=31536000, immutable` para `/assets/*` | Los chunks de Vite tienen hash de contenido, por lo que es seguro cachearlos 1 año en el cliente    |
 | Security headers    | `X-Frame-Options`, `X-Content-Type-Options`, `CSP` | Configurados como directivas `add_header` en nginx; no requieren lógica en la app                  |
 
-# Diseño Propuesto: docker-compose.prod.yml
+# Diseño Propuesto: `docker-compose.prod.yml`
 
 ## Propósito
 
@@ -165,7 +165,7 @@ No debe ser una copia del docker-compose.yml de desarrollo, sino una versión op
 
 ## Estructura general
 
-El docker-compose.prod.yml debe tener estas secciones:
+El `docker-compose.prod.yml` debe tener estas secciones:
 - `version`: La versión de Compose.
 - `services`: Definición de db, api y web.
 - `networks`: Red interna personalizada.
@@ -199,7 +199,7 @@ El docker-compose.prod.yml debe tener estas secciones:
 3) web
    - Imagen: Imagen de frontend de producción.
    - Propósito: Servir el frontend estático.
-   - Debe tener: 
+   - Debe tener:
      - Límites de recursos
      - Healthcheck
      - Seguridad similar a api
@@ -233,16 +233,16 @@ Las métricas RED (Rate, Errors, Duration) son el conjunto mínimo indispensable
 
 | Métrica | Tipo OpenTelemetry | Descripción | Labels |
 | --- | --- | --- | --- |
-| http.requests.total | Counter | Cantidad total de requests HTTP recibidas. Permite calcular el Rate (tasa de requests por segundo) usando rate() en PromQL. | method, route, status |
-| http.requests.errors | Counter | Total de requests que terminaron en error (4xx o 5xx). Permite calcular la tasa de error relativa al total de requests. | method, route, status |
-| http.request.duration | Histogram | Latencia de cada request en milisegundos. Al ser un histograma, permite calcular percentiles (p50, p95, p99) para medir la Duration real percibida por el usuario. | method, route |
-| process.memory.usage | Gauge | Memoria heap utilizada por el proceso Node.js en bytes. Permite detectar memory leaks o picos de consumo en producción. | — (ninguno, es un valor global del proceso) |
-| http.requests.active | Gauge | Cantidad de requests HTTP que se están procesando concurrentemente en un instante dado. Útil para detectar saturación. | method, route |
+| `http.requests.total` | Counter | Cantidad total de requests HTTP recibidas. Permite calcular el Rate (tasa de requests por segundo) usando rate() en PromQL. | method, route, status |
+| `http.requests.errors` | Counter | Total de requests que terminaron en error (4xx o 5xx). Permite calcular la tasa de error relativa al total de requests. | method, route, status |
+| `http.request.duration` | Histogram | Latencia de cada request en milisegundos. Al ser un histograma, permite calcular percentiles (p50, p95, p99) para medir la Duration real percibida por el usuario. | method, route |
+| `process.memory.usage` | Gauge | Memoria heap utilizada por el proceso Node.js en bytes. Permite detectar memory leaks o picos de consumo en producción. | — (ninguno, es un valor global del proceso) |
+| `http.requests.active` | Gauge | Cantidad de requests HTTP que se están procesando concurrentemente en un instante dado. Útil para detectar saturación. | method, route |
 
 
 Justificación de la elección de tipos:
-- Counter: para valores que solo crecen (conteos acumulados). Siempre se consultan via rate() para obtener una tasa por segundo.
-- Histogram: para medir distribuciones de tiempo. Permite calcular percentiles exactos con histogram_quantile() en lugar de solo promedios.
+- Counter: para valores que solo crecen (conteos acumulados). Siempre se consultan via `rate()` para obtener una tasa por segundo.
+- Histogram: para medir distribuciones de tiempo. Permite calcular percentiles exactos con `histogram_quantile()` en lugar de solo promedios.
 - Gauge: para valores que suben y bajan libremente (memoria actual, conexiones activas).
 
 
@@ -253,7 +253,7 @@ Justificación de la elección de tipos:
 #### Estructura y configuración del SDK
 
 
-El SDK se inicializa una sola vez en un archivo dedicado (packages/api/src/infrastructure/telemetry.ts) y debe ser el primer import del entrypoint de la aplicación, antes de que cualquier otro módulo sea cargado. Esto garantiza que las auto-instrumentaciones puedan registrarse correctamente en los módulos HTTP y Fastify.
+El SDK se inicializa una sola vez en un archivo dedicado (`packages/api/src/infrastructure/telemetry.ts`) y debe ser el primer import del entrypoint de la aplicación, antes de que cualquier otro módulo sea cargado. Esto garantiza que las auto-instrumentaciones puedan registrarse correctamente en los módulos HTTP y Fastify.
 
 
 ```typescript
@@ -397,3 +397,20 @@ async getAll(request, reply) {
  }
 }
 ```
+
+
+
+### c) Dashboard RED en Grafana
+
+
+El dashboard "RED — Alentapp API" guardará como Infrastructure as Code en `observability/grafana/dashboards/red-metrics.json`. Contará con 6 paneles organizados de mayor a menor criticidad operativa:
+
+
+| # | Panel | Métrica | Tipo de gráfico | Propósito | Alerta sugerida |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Requests por segundo | http_requests_total | Time series | Ver volumen de tráfico actual | — |
+| 2 | Tasa de error % | http_requests_errors_total | Time series | % de requests fallidas | > 5% |
+| 3 | Latencia p95 / p99 | http_request_duration_bucket | Time series | Performance percibida por el usuario | p99 > 500ms |
+| 4 | Distribución por status code | http_requests_total | Stacked area | Proporción 2xx / 4xx / 5xx a lo largo del tiempo | — |
+| 5 | Memoria del proceso | process_memory_usage_bytes | Time series | Detectar memory leaks o picos anormales | > 400MB |
+| 6 | Top 5 endpoints más lentos | http_request_duration_ms | Bar chart horizontal | Identificar cuellos de botella para priorizar optimizaciones | — |
