@@ -2,7 +2,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/client/client.js';
 import { DisciplineRepository } from '../domain/DisciplineRepository.js';
 import { CreateDisciplineRequest, DisciplineDTO, MemberDTO } from '@alentapp/shared';
-import { UpdateDisciplineRequest } from '../../../shared/index.js';
+import { UpdateDisciplineRequest } from '@alentapp/shared';
 
 if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is not set');
@@ -51,9 +51,7 @@ export class PostgresDisciplineRepository implements DisciplineRepository {
             dni: member.dni,
             name: member.name,
             email: member.email,
-            birthdate: member.birthdate
-                ? member.birthdate.toISOString().split('T')[0]
-                : '',
+            birthdate: member.birthdate ? (member.birthdate.toISOString().split('T')[0] ?? '') : '',
             category: member.category,
             status: member.status,
             created_at: member.created_at.toISOString()

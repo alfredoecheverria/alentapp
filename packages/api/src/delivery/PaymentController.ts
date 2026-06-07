@@ -4,7 +4,7 @@ import { GetPaymentUseCase } from '../application/GetPaymentUseCase.js';
 import { UpdatePaymentUseCase } from '../application/UpdatePaymentUseCase.js';
 import { DeletePaymentUseCase } from '../application/DeletePaymentUseCase.js';
 
-import { CreatePaymentRequest, UpdatePaymentRequest } from '@alentapp/shared/index.js';
+import { CreatePaymentRequest, UpdatePaymentRequest } from '@alentapp/shared';
 
 export class PaymentController {
     constructor(

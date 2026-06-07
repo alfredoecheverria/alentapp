@@ -1,5 +1,5 @@
 import { DisciplineRepository } from '../domain/DisciplineRepository.js';
-import { UpdateDisciplineRequest } from '../../../shared/index.js';
+import { UpdateDisciplineRequest } from '@alentapp/shared';
 import { DisciplineValidator } from '../domain/services/DisciplineValidator.js';
 
 export class UpdateDisciplineUseCase {

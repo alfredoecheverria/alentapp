@@ -1,5 +1,5 @@
 import { EnrollmentRepository } from '../domain/EnrollmentRepository.ts'
-import { EnrollmentValidator } from '../domain/services/SportValidator.ts'
+import { EnrollmentValidator } from '../domain/services/EnrollmentValidator.ts'
 import { EnrollmentDTO, CreateEnrollmentRequest } from '@alentapp/shared'
 
 export class CreateEnrollmentUseCase {

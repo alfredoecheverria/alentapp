@@ -79,8 +79,8 @@ export class PostgresEquipmentLoanRepository implements EquipmentLoanRepository 
             id: equipmentLoan.id,
             item_name: equipmentLoan.item_name,
             status: equipmentLoan.status,
-            loan_date: equipmentLoan.loan_date.toISOString().split('T')[0],
-            due_date: equipmentLoan.due_date.toISOString().split('T')[0],
+            loan_date: equipmentLoan.loan_date.toISOString().split('T')[0] ?? '',
+            due_date: equipmentLoan.due_date.toISOString().split('T')[0] ?? '',
             member_id: equipmentLoan.member_id,
         };
     }

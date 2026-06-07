@@ -89,7 +89,7 @@ export class PostgresMemberRepository implements MemberRepository {
             dni: member.dni,
             name: member.name,
             email: member.email,
-            birthdate: member.birthdate ? member.birthdate.toISOString().split('T')[0] : '', // Extract YYYY-MM-DD
+            birthdate: member.birthdate ? (member.birthdate.toISOString().split('T')[0] ?? '') : '', // Extract YYYY-MM-DD
             category: member.category,
             status: member.status,
             created_at: member.created_at.toISOString(),

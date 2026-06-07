@@ -2,6 +2,7 @@ import { describe, it, vi, beforeEach, expect } from "vitest";
 import { UpdateEquipmentLoanUseCase } from "./UpdateEquipmentLoanUseCase.js";
 import { EquipmentLoanRepository } from "../domain/EquipmentLoanRepository.js";
 import { EquipmentLoanValidator } from "../domain/services/EquipmentLoanValidator.js";
+import { EquipmentLoanDTO, EquipmentLoanStatus } from "@alentapp/shared";
 
 describe('UpdateEquipmentLoanUseCase', () => {
     const mockEquipmentLoanRepository = {
@@ -55,7 +56,14 @@ describe('UpdateEquipmentLoanUseCase', () => {
     });
 
     it('debe actualizar el prestamo correctamente', async () => {
-        const updatedLoan = { id: 'uuid-test', item_name: 'item-name' };
+        const updatedLoan: EquipmentLoanDTO = {
+            id: 'uuid-test',
+            item_name: 'item-name',
+            status: "Damaged",
+            loan_date: "",
+            due_date: "",
+            member_id: ""
+        };
         
         vi.mocked(mockValidator.validateLoanExists).mockResolvedValueOnce(undefined);
         vi.mocked(mockValidator.validateLoanMemberExists).mockResolvedValueOnce(undefined);

@@ -1,6 +1,6 @@
 import { PaymentRepository } from "../PaymentRepository.js";
 import { MemberRepository } from "../MemberRepository.js";
-import { PaymentStatus } from "@alentapp/shared/index.js";
+import { PaymentStatus } from '@alentapp/shared';
 
 export class PaymentValidator {
     constructor(

@@ -16,7 +16,7 @@ type DBSport = {
     name: string;
     description: string;
     max_capacity: number;
-    additional_price: float;
+    additional_price: number;
     requires_medical_certificate: boolean;
 }
 
@@ -27,7 +27,7 @@ export class PostgresSportRepository implements SportRepository {
                 name: data.name,
                 description: data.description,
                 max_capacity: data.max_capacity,
-                additional_price: data.additional_price,
+                additional_price: data.additional_price ? data.additional_price : 0,
                 requires_medical_certificate: data.requires_medical_certificate,
             }
         });

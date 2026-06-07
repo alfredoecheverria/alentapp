@@ -1,4 +1,4 @@
-import { DisciplineDTO, CreateDisciplineRequest, UpdateDisciplineRequest } from "../../../shared/index.js";
+import { DisciplineDTO, CreateDisciplineRequest, UpdateDisciplineRequest } from '@alentapp/shared';
 
 export interface DisciplineRepository {
     create(discipline: CreateDisciplineRequest): Promise<DisciplineDTO>;
