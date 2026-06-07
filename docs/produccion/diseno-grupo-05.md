@@ -216,8 +216,6 @@ El docker-compose.prod.yml debe tener estas secciones:
 
 ## Seguridad
 
-- Permitir solo `NET_BIND_SERVICE`.
-- `security_opt: ["no-new-privileges:true"]`
-- Reduccion de la superficie de ataque al no exponer puerto de la db.
+- Contenedores con `read_only: true`: true cuando sea viable.
 
 Nota importante de seguridad: `read_only: true` puede aplicarse bien en api y web. En db no debe usarse `read_only: true` porque PostgreSQL necesita escribir en su volumen de datos.
