@@ -219,3 +219,181 @@ El docker-compose.prod.yml debe tener estas secciones:
 - Contenedores con `read_only: true`: true cuando sea viable.
 
 Nota importante de seguridad: `read_only: true` puede aplicarse bien en api y web. En db no debe usarse `read_only: true` porque PostgreSQL necesita escribir en su volumen de datos.
+
+
+
+# Diseño de la observabilidad
+
+
+### a) Metricas RED a capturar
+
+
+Las métricas RED (Rate, Errors, Duration) son el conjunto mínimo indispensable para entender el comportamiento de un servicio de cara al usuario. A continuación se detallan las 5 métricas que se implementarán:
+
+
+| Métrica | Tipo OpenTelemetry | Descripción | Labels |
+| --- | --- | --- | --- |
+| http.requests.total | Counter | Cantidad total de requests HTTP recibidas. Permite calcular el Rate (tasa de requests por segundo) usando rate() en PromQL. | method, route, status |
+| http.requests.errors | Counter | Total de requests que terminaron en error (4xx o 5xx). Permite calcular la tasa de error relativa al total de requests. | method, route, status |
+| http.request.duration | Histogram | Latencia de cada request en milisegundos. Al ser un histograma, permite calcular percentiles (p50, p95, p99) para medir la Duration real percibida por el usuario. | method, route |
+| process.memory.usage | Gauge | Memoria heap utilizada por el proceso Node.js en bytes. Permite detectar memory leaks o picos de consumo en producción. | — (ninguno, es un valor global del proceso) |
+| http.requests.active | Gauge | Cantidad de requests HTTP que se están procesando concurrentemente en un instante dado. Útil para detectar saturación. | method, route |
+
+
+Justificación de la elección de tipos:
+- Counter: para valores que solo crecen (conteos acumulados). Siempre se consultan via rate() para obtener una tasa por segundo.
+- Histogram: para medir distribuciones de tiempo. Permite calcular percentiles exactos con histogram_quantile() en lugar de solo promedios.
+- Gauge: para valores que suben y bajan libremente (memoria actual, conexiones activas).
+
+
+
+### b) OpenTelemetry SDK
+
+
+#### Estructura y configuración del SDK
+
+
+El SDK se inicializa una sola vez en un archivo dedicado (packages/api/src/infrastructure/telemetry.ts) y debe ser el primer import del entrypoint de la aplicación, antes de que cualquier otro módulo sea cargado. Esto garantiza que las auto-instrumentaciones puedan registrarse correctamente en los módulos HTTP y Fastify.
+
+
+```typescript
+// packages/api/src/infrastructure/Telemetry.ts
+
+
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { metrics } from '@opentelemetry/api';
+import type { Meter } from '@opentelemetry/api';
+
+
+// 1. Configurar el exportador de Prometheus
+//    - Expone las métricas en http://localhost:9464/metrics
+//    - Prometheus scrapeará este endpoint periódicamente
+const prometheusExporter = new PrometheusExporter({
+ port: 9464,
+ endpoint: '/metrics',
+});
+
+
+// 2. Inicializar el SDK con auto-instrumentaciones
+//    - HTTP: instrumenta automáticamente requests entrantes/salientes
+//    - Fastify: agrega atributos específicos del framework (route, etc.)
+const sdk = new NodeSDK({
+ metricReader: prometheusExporter,
+ instrumentations: [
+   getNodeAutoInstrumentations({
+     '@opentelemetry/instrumentation-http': {
+       // Captura automáticamente: method, url, status_code, duration
+     },
+     '@opentelemetry/instrumentation-fastify': {
+       // Agrega: http.route (ruta normalizada, ej: /api/v1/socios/:id)
+     },
+   }),
+ ],
+});
+
+
+sdk.start();
+
+
+// 3. Obtener un Meter nombrado para métricas manuales (RED)
+const meter = metrics.getMeter('alentapp-api');
+
+
+// 4. Factory de métricas RED para usar en los controllers
+export function createREDMetrics(meter: Meter) {
+ const requestCounter = meter.createCounter('http.requests.total', {
+   description: 'Total de requests HTTP recibidas',
+ });
+
+
+ const errorCounter = meter.createCounter('http.requests.errors', {
+   description: 'Total de errores HTTP (4xx/5xx)',
+ });
+
+
+ const requestDuration = meter.createHistogram('http.request.duration', {
+   description: 'Latencia de cada request HTTP',
+   unit: 'ms',
+ });
+
+
+ const activeRequests = meter.createUpDownCounter('http.requests.active', {
+   description: 'Requests HTTP concurrentes en proceso',
+ });
+
+
+ const memoryUsage = meter.createObservableGauge('process.memory.usage', {
+   description: 'Memoria heap utilizada por el proceso Node.js',
+   unit: 'bytes',
+ });
+
+
+ // La memoria se observa de forma asíncrona en cada scrape
+ memoryUsage.addCallback((result) => {
+   result.observe(process.memoryUsage().heapUsed);
+ });
+
+
+ return { requestCounter, errorCounter, requestDuration, activeRequests };
+}
+
+
+export { sdk, meter, prometheusExporter };
+```
+
+
+#### Inicialización en el entrypoint
+
+
+```typescript
+// packages/api/src/app.ts
+import './infrastructure/telemetry.js';
+
+
+// el resto de imports
+import Fastify from 'fastify';
+// ...
+```
+
+
+#### Uso en los controllers (instrumentación manual)
+
+
+```typescript
+// Ejemplo: packages/api/src/controllers/MemberController.ts
+import { metrics } from '@opentelemetry/api';
+import { createREDMetrics } from '../infrastructure/telemetry.js';
+
+
+const meter = metrics.getMeter('alentapp-api');
+const { requestCounter, errorCounter, requestDuration, activeRequests } =
+ createREDMetrics(meter);
+
+
+async getAll(request, reply) {
+ const start = Date.now();
+ const labels = {
+   method: request.method,
+   route: request.url.split('?')[0],
+ };
+
+
+ activeRequests.add(1, labels);   // +1 al iniciar
+
+
+ try {
+   const members = await this.getMembersUseCase.execute();
+   requestCounter.add(1, { ...labels, status: '200' });
+   return reply.status(200).send({ data: members });
+ } catch (error) {
+   errorCounter.add(1, { ...labels, status: '500' });
+   requestCounter.add(1, { ...labels, status: '500' });
+   return reply.status(500).send({ error: 'Error interno' });
+ } finally {
+   requestDuration.record(Date.now() - start, labels);
+   activeRequests.add(-1, labels);  // -1 al finalizar
+ }
+}
+```
