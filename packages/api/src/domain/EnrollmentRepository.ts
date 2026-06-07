@@ -7,5 +7,5 @@ export interface EnrollmentRepository {
     findAllBySportId(id: string): Promise<EnrollmentDTO[]>;
     findAll(): Promise<EnrollmentDTO[]>;
     update(id: string, data: UpdateEnrollmentRequest): Promise<EnrollmentDTO>;
-    detele(id: string): Promise<void>;
+    delete(id: string): Promise<void>;
 }

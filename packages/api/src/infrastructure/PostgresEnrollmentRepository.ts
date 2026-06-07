@@ -1,6 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/client/client.js';
-import { EnrollmentRepository } from '../domain/EnrollmentRepository.ts';
+import { EnrollmentRepository } from '../domain/EnrollmentRepository.js';
 import { EnrollmentDTO, CreateEnrollmentRequest, UpdateEnrollmentRequest } from '@alentapp/shared';
 
 if (!process.env.DATABASE_URL) {
@@ -23,7 +23,6 @@ export class PostgresEnrollmentRepository implements EnrollmentRepository {
     async create(data: CreateEnrollmentRequest): Promise<EnrollmentDTO> {
         const enrollment = await prisma.enrollment.create({
             data: {
-                id: data.id,
                 member_id: data.member_id,
                 sport_id: data.sport_id,
                 enrollment_date: new Date(data.enrollment_date),

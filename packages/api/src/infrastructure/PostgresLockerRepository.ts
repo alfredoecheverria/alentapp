@@ -115,7 +115,7 @@ export class PostgresLockerRepository implements LockerRepository {
             dni: member.dni,
             name: member.name,
             email: member.email,
-            birthdate: member.birthdate ? member.birthdate.toISOString().split('T')[0] : '',
+            birthdate: member.birthdate ? (member.birthdate.toISOString().split('T')[0] ?? '') : '',
             category: member.category,
             status: member.status,
             created_at: member.created_at.toISOString(),

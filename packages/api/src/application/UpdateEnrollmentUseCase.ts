@@ -8,7 +8,7 @@ export class UpdateEnrollmentUseCase {
         private readonly enrollmentValidator: EnrollmentValidator,
     ) {}
 
-    async execute(id: string, data: UpdateEnrollmentRequest): Promise<EnrollmentDTO> {
+    async execute(id: string, data: UpdateEnrollmentRequest): Promise<EnrollmentDTO | void> {
         // Valida que haya datos a modificar en el pedido
         this.enrollmentValidator.validateEmptyRequest(data);
 

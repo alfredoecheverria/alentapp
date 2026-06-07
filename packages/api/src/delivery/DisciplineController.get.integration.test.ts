@@ -25,7 +25,7 @@ vi.mock('../infrastructure/PostgresDisciplineRepository.js', () => {
             async deactivate(id: string) {
                 const index = disciplines.findIndex((item) => item.id === id);
                 if (index === -1) return null;
-                disciplines[index].deactivated_at = '2026-05-11T00:00:00.000Z';
+                disciplines[index]!.deactivated_at = '2026-05-11T00:00:00.000Z';
                 return disciplines[index];
             }
         }

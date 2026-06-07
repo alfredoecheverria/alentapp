@@ -1,3 +1,4 @@
+import { SportValidator } from '../domain/services/SportValidator.ts';
 import { SportRepository } from '../domain/SportRepository.ts';
 
 export class DeleteSportUseCase {

@@ -1,4 +1,4 @@
-import { PaymentDTO } from "@alentapp/shared/index.js";
+import { PaymentDTO } from '@alentapp/shared';
 
 export interface PaymentRepository {
     create(payment: Omit<PaymentDTO, 'id'>): Promise<PaymentDTO>;

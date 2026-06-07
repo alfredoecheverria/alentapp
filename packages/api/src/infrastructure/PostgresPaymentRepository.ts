@@ -14,7 +14,7 @@ const prisma = new PrismaClient({
 type DBPayment = {
     id: string;
     member_id: string;
-    amount: float;
+    amount: number;
     due_date: Date;
     status: 'Pendiente' | 'Pago' | 'Cancelado';
     payment_date: Date;
@@ -64,9 +64,9 @@ export class PostgresPaymentRepository implements PaymentRepository {
             id: payment.id,
             member_id: payment.member_id,
             amount: payment.amount,
-            due_date: payment.due_date.toISOString().split('T')[0],
+            due_date: payment.due_date.toISOString().split('T')[0] ?? '',
             status: payment.status,
-            payment_date: payment.payment_date.toISOString().split('T')[0],
+            payment_date: payment.payment_date.toISOString().split('T')[0] ?? '',
             year: payment.year,
             month: payment.month,
         };

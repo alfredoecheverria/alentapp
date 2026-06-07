@@ -9,8 +9,8 @@ export class SportController {
     constructor(
         private readonly createSportUseCase: CreateSportUseCase,
         private readonly getSportsUseCase: GetSportsUseCase,
-        private readonly updateSportUseCase: UpdateSportsUseCase,
-        private readonly deleteSportUseCase: DeleteSportsUseCase,
+        private readonly updateSportUseCase: UpdateSportUseCase,
+        private readonly deleteSportUseCase: DeleteSportUseCase,
     ) {}
 
     async create(

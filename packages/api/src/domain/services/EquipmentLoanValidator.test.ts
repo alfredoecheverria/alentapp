@@ -32,13 +32,29 @@ describe('EquipmentLoanValidator', () => {
 
     describe('validateMemberCategoryForLoan', () => {
         it('debe pasar si el miembro tiene categoria Senior o Lifetime', async () => {
-            vi.mocked(mockMemberRepo.findById).mockResolvedValue({ id: 'member-id', category: 'Senior' });
+            vi.mocked(mockMemberRepo.findById).mockResolvedValue({
+                id: 'member-id', category: 'Cadete',
+                dni: '',
+                name: '',
+                email: '',
+                birthdate: '',
+                status: 'Activo',
+                created_at: ''
+            });
             await expect(validator.validateMemberCategoryForLoan('member-id')).resolves.toBeUndefined();
             expect(mockMemberRepo.findById).toHaveBeenCalledWith('member-id');
         });
 
         it('debe lanzar error si el miembro tiene categoria Cadete', async () => {
-            vi.mocked(mockMemberRepo.findById).mockResolvedValue({ id: 'member-id', category: 'Cadete' });
+            vi.mocked(mockMemberRepo.findById).mockResolvedValue({
+                id: 'member-id', category: 'Cadete',
+                dni: '',
+                name: '',
+                email: '',
+                birthdate: '',
+                status: 'Activo',
+                created_at: ''
+            });
             await expect(validator.validateMemberCategoryForLoan('member-id')).rejects.toThrow('Solo se permite realizar prestamos a miembros con categoria Senior o Lifetime');
             expect(mockMemberRepo.findById).toHaveBeenCalledWith('member-id');
         });
@@ -60,7 +76,14 @@ describe('EquipmentLoanValidator', () => {
 
     describe('validateLoanExists', () => {
        it('debe pasar si el préstamo de equipamiento existe en la base de datos', async () => {
-           vi.mocked(mockEquipmentLoanRepo.findById).mockResolvedValue({ id: 'loan-id' });
+           vi.mocked(mockEquipmentLoanRepo.findById).mockResolvedValue({
+               id: 'loan-id',
+               item_name: '',
+               status: 'Damaged',
+               loan_date: '',
+               due_date: '',
+               member_id: ''
+           });
            await expect(validator.validateLoanExists('loan-id')).resolves.toBeUndefined();
            expect(mockEquipmentLoanRepo.findById).toHaveBeenCalledWith('loan-id');
        });

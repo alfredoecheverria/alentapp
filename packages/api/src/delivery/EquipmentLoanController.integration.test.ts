@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { buildApp } from '../app.js';
-import { CreateEquipmentLoanRequest } from '../../../shared/index.js';
+import { CreateEquipmentLoanRequest } from '@alentapp/shared';
 
 vi.mock('../infrastructure/PostgresEquipmentLoanRepository.js', () => {
     return {

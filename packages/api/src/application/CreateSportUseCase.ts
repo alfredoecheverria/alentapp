@@ -19,7 +19,7 @@ export class CreateSportUseCase {
         }
 
         //2. Ejecuto registro en base de datos
-        const newSport = await this.sportRepository.create(data);
+        const newSport = await this.sportRepository.create(data as SportDTO);
 
         return newSport;
     }

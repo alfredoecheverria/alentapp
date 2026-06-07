@@ -108,7 +108,7 @@ export interface SportDTO {
   name: string;
   description: string;
   max_capacity: number;
-  additional_price: float;
+  additional_price: number;
   requires_medical_certificate: boolean;
 }
 
@@ -116,7 +116,7 @@ export interface CreateSportRequest {
   name: string;
   description: string;
   max_capacity: number;
-  additional_price?: float | null;
+  additional_price?: number;
   requires_medical_certificate: boolean;
 }
 

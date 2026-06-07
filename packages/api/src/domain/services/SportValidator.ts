@@ -3,7 +3,7 @@ import { SportRepository } from "../SportRepository.ts";
 export class SportValidator {
     constructor(private readonly sportRepo: SportRepository) {}
 
-    async validateSportExists(id: string): void {
+    async validateSportExists(id: string): Promise<void> {
         const exists = await this.sportRepo.findById(id);
         if (!exists) {
             throw new Error('El deporte no existe');
@@ -16,13 +16,13 @@ export class SportValidator {
        }
     }
 
-    validateAdditionalPrice(additional_price: float): void {
+    validateAdditionalPrice(additional_price: number): void {
         if(additional_price < 0) {
             throw new Error('El valor de precio adicional debe ser un numero igual o mayor a 0');
         }
     }
 
-    validateEmptyDescription(description: string): void {
+    validateEmptyDescription(description?: string): void {
         if (description === "") {
             throw new Error('Descripción de deporte inválida');
         }

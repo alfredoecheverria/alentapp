@@ -23,10 +23,11 @@ describe('CreateEquipmentLoanUseCase', () => {
 
     it('debe crear un préstamo de equipo exitosamente si el socio es elegible y el equipo con estado loaned', async () => {
         const mockRequest: CreateEquipmentLoanRequest = {
+            item_name: 'pantalon',
             member_id: 'member-123',
-            equipment_id: 'equipment-456',
             loan_date: '2026-05-01',
-            due_date: '2026-05-10'
+            due_date: '2026-05-10',
+            status: 'Damaged'
         };
 
 
@@ -39,7 +40,6 @@ describe('CreateEquipmentLoanUseCase', () => {
             id: 'loan-789',
             ...mockRequest,
             status: 'Loaned',
-            created_at: '2026-04-28T00:00:00.000Z'
         });
 
         const result = await useCase.execute(mockRequest);
