@@ -77,3 +77,75 @@ Pasos a realizar:
 | Seguridad             | Ejecución sin usuario root                                            |
 | Monitoreo             | Healthcheck cada 30 segundos                                          |
 | Optimizacion de cache | Reutilización de capas de dependencias cuando package.json no cambia  |
+
+
+# Diseño Propuesto: packages/web/Dockerfile.prod
+
+## Propósito
+
+Este Dockerfile tiene como objetivo construir y desplegar la aplicación frontend desarrollada con Vite de manera optimizada para entornos productivos.
+
+Se implementa un enfoque multi-stage build para separar las tareas de instalación de dependencias, compilación y ejecución. Esto permite:
+
+- Reducir el tamaño final de la imagen.
+- Eliminar dependencias innecesarias en producción.
+- Mejorar la seguridad al no exponer herramientas de desarrollo.
+- Optimizar los tiempos de despliegue y transferencia de imágenes.
+
+Además, la aplicación no se ejecuta mediante Node.js en producción, sino que los archivos estáticos generados por Vite son servidos mediante Nginx, una solución más eficiente para este tipo de aplicaciones.
+
+---
+
+## Estructura — Etapas y Capas
+
+### Stage 1: `deps` — Instalación de dependencias
+
+**Base:** `node:22-alpine`
+
+En esta etapa se instalan todas las dependencias necesarias para construir la aplicación. Inicialmente se copian únicamente los archivos de definición de dependencias (`package.json`), antes de copiar el código fuente completo. Esto permite que Docker reutilice la caché de esta capa siempre que las dependencias no cambien, evitando reinstalaciones innecesarias durante los builds.
+
+A continuación se ejecuta la instalación mediante `npm ci`. El propósito principal de esta etapa es desacoplar la gestión de dependencias del código fuente, mejorando significativamente los tiempos de construcción y garantizando reproducibilidad entre entornos.
+
+---
+
+### Stage 2: `build` — Compilación de la aplicación
+
+**Base:** `node:22-alpine`
+
+Esta etapa se encarga de generar la versión optimizada para producción del frontend. Se reutilizan las dependencias instaladas en la etapa anterior, se copia el código fuente de la aplicación y se ejecuta el proceso de transpilación mediante `npm run build`.
+
+Como resultado se genera el directorio `dist/`, que contiene únicamente los archivos estáticos optimizados (HTML, CSS, JavaScript e imágenes). La separación entre instalación y compilación permite aprovechar mejor la caché de Docker y aislar el proceso de build del entorno de ejecución final.
+
+---
+
+### Stage 3: `runtime` — Ejecución en producción
+
+**Base:** `nginx:stable-alpine`
+
+La última etapa tiene como objetivo servir la aplicación en producción utilizando Nginx. Se copian exclusivamente los archivos generados en `dist/` hacia el directorio público de Nginx, evitando incluir código fuente, herramientas de compilación o el runtime de Node.js dentro de la imagen final.
+
+Además, se incorpora una configuración personalizada de Nginx para habilitar:
+
+- Compresión gzip
+- Cacheo de recursos estáticos
+- Cabeceras de seguridad HTTP
+- Soporte para aplicaciones SPA mediante redirección de rutas hacia `index.html`
+
+También se define un healthcheck sobre `localhost:80` para verificar periódicamente la disponibilidad del servicio.
+
+Esta arquitectura permite obtener una imagen final más pequeña, segura y eficiente, ya que el contenedor de producción contiene únicamente Nginx y los recursos estáticos necesarios para ejecutar la aplicación.
+
+---
+
+## Requisitos No Funcionales
+
+| Atributo            | Objetivo                                          | Justificación                                                                                       |
+|---------------------|---------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| Tamaño imagen final | ≤ 50 MB                                           | `nginx:stable-alpine` pesa ~8 MB; la imagen final no debería superar los 50 MB incluyendo los assets del frontend |
+| Tiempo de startup   | ≤ 3 s                                             | nginx con archivos estáticos inicia casi instantáneamente; es medible con el healthcheck            |
+| Tiempo de rebuild   | ≤ 60 s sin cambio de deps                         | La separación de la capa de `node_modules` permite que un cambio de código no reinstale paquetes    |
+| Healthcheck         | `GET http://localhost:80`                         | `interval=30s`, `timeout=5s`, `retries=3`; permite que el orquestador detecte un nginx caído        |
+| Seguridad           | Sin secretos en capas; usuario no-root            | Los secrets de build no deben quedar en el historial de capas; nginx debe correr como usuario sin privilegios |
+| Compresión          | gzip activado en nginx                            | Reduce el tamaño de transferencia de JS/CSS ~70%; configurado en `nginx.conf`, no en la aplicación  |
+| Cache de assets     | `Cache-Control: max-age=31536000, immutable` para `/assets/*` | Los chunks de Vite tienen hash de contenido, por lo que es seguro cachearlos 1 año en el cliente    |
+| Security headers    | `X-Frame-Options`, `X-Content-Type-Options`, `CSP` | Configurados como directivas `add_header` en nginx; no requieren lógica en la app                  |
