@@ -23,7 +23,7 @@ sdk.start();
 
 const meter = metrics.getMeter('alentapp-api');
 
-export function createREDMetrics(meter: Meter) {
+export function createREDMetrics() {
     const requestCounter = meter.createCounter('http.requests.total', {
         description: 'Total de requests HTTP',
     });
@@ -37,15 +37,22 @@ export function createREDMetrics(meter: Meter) {
     return { requestCounter, errorCounter, requestDuration };
 }
 
-export function createObservables(meter: Meter) {
+export function createObservables(activeRequests: {value: number}) {
     const memoryUsage = meter.createObservableGauge('process.memory.usage', {
         description: 'Uso de memoria',
         unit: 'By',
     });
+
+    memoryUsage.addCallback((result) => {
+        result.observe(process.memoryUsage().heapUsed);
+    });
+
     const concurrentRequests = meter.createObservableGauge('http.requests.active', {
         description: 'Total de requests HTTP concurrentes',
     });
-    return { memoryUsage, concurrentRequests };
+    concurrentRequests.addCallback((result) => {
+        result.observe(activeRequests.value);
+    });
 }
 
 export { sdk, meter, prometheusExporter };
