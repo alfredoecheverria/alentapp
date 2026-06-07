@@ -153,11 +153,6 @@ export function PaymentsView() {
     fetchMembers();
   }, []);
 
-  const getMemberName = (memberId: string) => {
-    const member = members.find(m => m.id === memberId);
-    return member ? member.name : "Desconocido";
-  };
-
   return (
     <DialogRoot open={isDialogOpen} onOpenChange={(e) => setIsDialogOpen(e.open)}>
       <Stack gap="8">

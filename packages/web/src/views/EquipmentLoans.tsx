@@ -273,12 +273,12 @@ export function EquipmentLoansView() {
             <Table.Root size="sm" variant="line">
               <Table.Header>
                 <Table.Row bg="bg.muted">
-                  <Table.ColumnHeader fontSummary="bold">Socio</Table.ColumnHeader>
-                  <Table.ColumnHeader fontSummary="bold">Equipo</Table.ColumnHeader>
-                  <Table.ColumnHeader fontSummary="bold">Fecha Retiro</Table.ColumnHeader>
-                  <Table.ColumnHeader fontSummary="bold">Fecha Devolución</Table.ColumnHeader>
-                  <Table.ColumnHeader fontSummary="bold">Estado</Table.ColumnHeader>
-                  <Table.ColumnHeader fontSummary="bold" textAlign="right">Acciones</Table.ColumnHeader>
+                  <Table.ColumnHeader >Socio</Table.ColumnHeader>
+                  <Table.ColumnHeader >Equipo</Table.ColumnHeader>
+                  <Table.ColumnHeader >Fecha Retiro</Table.ColumnHeader>
+                  <Table.ColumnHeader >Fecha Devolución</Table.ColumnHeader>
+                  <Table.ColumnHeader >Estado</Table.ColumnHeader>
+                  <Table.ColumnHeader textAlign="right">Acciones</Table.ColumnHeader>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
