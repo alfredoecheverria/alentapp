@@ -149,3 +149,75 @@ Esta arquitectura permite obtener una imagen final más pequeña, segura y efici
 | Compresión          | gzip activado en nginx                            | Reduce el tamaño de transferencia de JS/CSS ~70%; configurado en `nginx.conf`, no en la aplicación  |
 | Cache de assets     | `Cache-Control: max-age=31536000, immutable` para `/assets/*` | Los chunks de Vite tienen hash de contenido, por lo que es seguro cachearlos 1 año en el cliente    |
 | Security headers    | `X-Frame-Options`, `X-Content-Type-Options`, `CSP` | Configurados como directivas `add_header` en nginx; no requieren lógica en la app                  |
+
+# Diseño Propuesto: docker-compose.prod.yml
+
+## Propósito
+
+Este archivo debe definir cómo se ejecutan los servicios en producción, con un enfoque en:
+- Estabilidad
+- Seguridad
+- Control de recursos
+- Monitoreo básico
+- Separación de datos sensibles del repositorio
+
+No debe ser una copia del docker-compose.yml de desarrollo, sino una versión optimizada para producción.
+
+## Estructura general
+
+El docker-compose.prod.yml debe tener estas secciones:
+- `version`: La versión de Compose.
+- `services`: Definición de db, api y web.
+- `networks`: Red interna personalizada.
+- `volumes`: Volumen de datos de PostgreSQL.
+- `env_file`: Carga de variables sensibles desde un archivo externo.
+
+## Servicios clave
+
+1) db
+   - Imagen: `postgres:16-alpine`
+   - Propósito: Base de datos PostgreSQL en producción.
+   - Debe tener:
+     - Healthcheck
+     - Volumen persistente
+     - Logging
+     - Configuración sensible desde `.env.prod`
+     - Seguridad estricta (aunque no puede ser `read_only`)
+     - El puerto de la db no tiene que estar expuesto
+
+2) api
+   - Imagen: Imagen o build de producción.
+   - Propósito: Ejecutar la API de backend con el Dockerfile de producción.
+   - Debe tener:
+     - Healthcheck contra `http://localhost:3000`
+     - Límites de CPU/memoria
+     - Seguridad: `read_only: true`, `cap_drop: ALL`, `cap_add: NET_BIND_SERVICE`, `no-new-privileges`
+     - Logging rotado
+     - `depends_on` de db con condición de salud
+     - Exponer puerto 3000
+
+3) web
+   - Imagen: Imagen de frontend de producción.
+   - Propósito: Servir el frontend estático.
+   - Debe tener: 
+     - Límites de recursos
+     - Healthcheck
+     - Seguridad similar a api
+     - Logging rotado
+     - Exponer puerto 8080
+
+## Requisitos no funcionales
+
+- Cotas de recursos: Cada servicio define CPU y memoria.
+- Healthchecks: db, api y web deben verificar que estén funcionando.
+- Logging: Driver `json-file` con rotación: `max-size: 10m`, `max-file: 3`.
+- Red: Usar una red interna personalizada, no la red por defecto.
+- Secrets: Variables sensibles deben venir de un `.env` externo, no estar hardcodeadas.
+
+## Seguridad
+
+- Permitir solo `NET_BIND_SERVICE`.
+- `security_opt: ["no-new-privileges:true"]`
+- Reduccion de la superficie de ataque al no exponer puerto de la db.
+
+Nota importante de seguridad: `read_only: true` puede aplicarse bien en api y web. En db no debe usarse `read_only: true` porque PostgreSQL necesita escribir en su volumen de datos.
