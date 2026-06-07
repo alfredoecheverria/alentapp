@@ -151,7 +151,7 @@ export function SportsView() {
                     placeholder="Ej. Kung-Fu"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    disabled={editingSportId}
+                    disabled={!!editingSportId}
                     required={!editingSportId}
                   />
                 </Field>
@@ -177,14 +177,14 @@ export function SportsView() {
                                         type="number"
                     value={formData.additional_price}
                     onChange={(e) => setFormData({ ...formData, additional_price: parseFloat(e.target.value) })}
-                    disabled={editingSportId}
+                    disabled={!!editingSportId}
                     required={!editingSportId}
                   />
                 </Field>
                   <CheckboxRoot
                     checked={formData.requires_medical_certificate}
                     onCheckedChange={(e) => setFormData({ ...formData, requires_medical_certificate: !!e.checked})}
-                    disabled={editingSportId}
+                    disabled={!!editingSportId}
                   >
                                     <CheckboxHiddenInput />
                                     <CheckboxControl />

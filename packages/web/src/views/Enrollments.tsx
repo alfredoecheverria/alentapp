@@ -37,14 +37,7 @@ import {
     CheckboxControl,
     CheckboxLabel,
 } from "../components/ui/checkbox";
-import {
-    SelectRoot,
-    SelectTrigger,
-    SelectValueText,
-    SelectContent,
-    SelectItem,
-    createListCollection,
-} from "../components/ui/select";
+
 
 export function EnrollmentsView() {
     const [enrollments, setEnrollments] = useState<EnrollmentDTO[]>([]);
@@ -202,17 +195,15 @@ export function EnrollmentsView() {
             <DialogBody>
               <Stack gap="4">
                 <Field label="Socio" required={!editingEnrollmentId}>
-                    <NativeSelect.Root>
+                    <NativeSelect.Root disabled={!!editingEnrollmentId}>
                         <NativeSelect.Field
                             placeholder="Seleccione un Socio"
-                            disabled={editingEnrollmentId}
-                            required={!editingEnrollmentId}
-                            value={[formData.member_id]}
+                            value={formData.member_id}
                             onChange={(e) => setFormData({ ...formData, member_id: e.target.value})}
                         >
                             {members.map((member) => (
                                 <option key={member.id} value={member.id}>
-                                        {member.name}
+                                        {member?.name}
                                 </option>
                             ))}
                         </NativeSelect.Field>
@@ -220,17 +211,15 @@ export function EnrollmentsView() {
                     </NativeSelect.Root>
                 </Field>
                 <Field label="Deporte" required={!editingEnrollmentId}>
-                    <NativeSelect.Root>
+                    <NativeSelect.Root disabled={!!editingEnrollmentId}>
                         <NativeSelect.Field
                             placeholder="Seleccione un Deporte"
-                            disabled={editingEnrollmentId}
-                            required={!editingEnrollmentId}
-                            value={[formData.sport_id]}
+                            value={formData.sport_id}
                             onChange={(e) => setFormData({ ...formData, sport_id: e.target.value})}
                         >
                             {sports.map((sport) => (
                                 <option key={sport.id} value={sport.id}>
-                                        {sport.name}
+                                        {sport?.name}
                                 </option>
                             ))}
                         </NativeSelect.Field>

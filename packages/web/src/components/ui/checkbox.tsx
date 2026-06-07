@@ -1,5 +1,4 @@
 import { Checkbox } from '@chakra-ui/react'
-import * as React from "react"
 
 export const CheckboxRoot = Checkbox.Root
 export const CheckboxHiddenInput = Checkbox.HiddenInput
