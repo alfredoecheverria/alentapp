@@ -5,6 +5,12 @@ import { UpdateMemberUseCase } from '../application/UpdateMemberUseCase.js';
 import { DeleteMemberUseCase } from '../application/DeleteMemberUseCase.js';
 import { CreateMemberRequest, UpdateMemberRequest } from '@alentapp/shared';
 
+import { metrics } from '@opentelemetry/api';
+import { createREDMetrics } from '../infrastructure/Telemetry.ts';
+
+const meter = metrics.getMeter('alentapp-api');
+metricas = createREDMetrics(meter);
+
 export class MemberController {
     constructor(
         private readonly createMemberUseCase: CreateMemberUseCase,
@@ -14,11 +20,18 @@ export class MemberController {
     ) {}
 
     async getAll(_request: FastifyRequest, reply: FastifyReply) {
+        const start = Date.now();
+        const method = request.method;
+        const route = request.url.split('?')[0];
         try {
             const socios = await this.getMembersUseCase.execute();
+            metricas.requestCounter.add(1, { method, route, status: '200' });
             return reply.status(200).send({ data: socios });
         } catch (error: any) {
+            metricas.errorCounter.add(1, { method, route, status: '500' });
             return reply.status(500).send({ error: error.message });
+        } finally {
+            metricas.requestDuration.record(Date.now() - start, { method, route })
         }
     }
 
