@@ -5,6 +5,11 @@ import { GetEquipmentLoansUseCase } from '../application/GetEquipmentLoanUseCase
 import { UpdateEquipmentLoanUseCase } from '../application/UpdateEquipmentLoanUseCase.js';
 import { DeleteEquipmentLoanUseCase } from '../application/DeleteEquipmentLoanUseCase.js';
 
+import { metrics } from '@opentelemetry/api';
+import { createREDMetrics } from '../infrastructure/Telemetry.ts';
+
+const metricas = createREDMetrics();
+
 export class EquipmentLoanController {
 
     constructor(
@@ -16,39 +21,53 @@ export class EquipmentLoanController {
 
 
     async getAll(_request: FastifyRequest, reply: FastifyReply) {
-       try {
-           const equipmentLoans = await this.getEquipmentLoansUseCase.execute();
-           return reply.status(200).send({ data: equipmentLoans });
-       } catch (error: any) {
-           return reply.status(500).send({ error: error.message });
-       }
-   }
+        const start = Date.now();
+        const method = request.method;
+        const route = request.url.split('?')[0];
+        try {
+            const equipmentLoans = await this.getEquipmentLoansUseCase.execute();
+            metricas.requestCounter.add(1, { method, route, status: '200' });
+            return reply.status(200).send({ data: equipmentLoans });
+        } catch (error: any) {
+            metricas.errorCounter.add(1, { method, route, status: '500' });
+            return reply.status(500).send({ error: error.message });
+        } finally {
+            metricas.requestDuration.record(Date.now() - start, { method, route })
+        }
+    }
 
     async create(
         request: FastifyRequest<{ Body: CreateEquipmentLoanRequest }>,
         reply: FastifyReply
     ) {
+        const start = Date.now();
+        const method = request.method;
+        const route = request.url.split('?')[0];
         try {
-            request.log.info('Alguien pegó al endpoint de ping');
             const equipmentLoan = await this.createEquipmentLoanUseCase.execute(request.body);
+            metricas.requestCounter.add(1, { method, route, status: '201' });
             return reply.status(201).send({ data: equipmentLoan });
-        } catch (error: any) {
-            
-            request.log.error(error);
 
+        } catch (error: any) {
             if (error.message.includes('El usuario no existe')) {
+                metricas.errorCounter.add(1, { method, route, status: '404' });
                 return reply.status(404).send({ error: error.message });
             }
 
             if (error.message.includes('Fecha prestamo no puede ser posterior a Fecha Devolucion')) {
+                metricas.errorCounter.add(1, { method, route, status: '400' });
                 return reply.status(400).send({ error: error.message });
             }
 
             if (error.message.includes('Solo se permite realizar prestamos a miembros con categoria Senior o Lifetime')) {
+                metricas.errorCounter.add(1, { method, route, status: '400' });
                 return reply.status(400).send({ error: error.message });
             }
 
+            metricas.errorCounter.add(1, { method, route, status: '500' });
             return reply.status(500).send({ error: "Error interno, reintente más tarde" });
+        } finally {
+            metricas.requestDuration.record(Date.now() - start, { method, route })
         }
     }
 
@@ -56,48 +75,62 @@ export class EquipmentLoanController {
         request: FastifyRequest<{ Params: { id: string }; Body: UpdateEquipmentLoanRequest }>,
         reply: FastifyReply
     ) {
+        const start = Date.now();
+        const method = request.method;
+        const route = request.url.split('?')[0];
         try {
             const equipmentLoan = await this.updateEquipmentLoanUseCase.execute(request.params.id, request.body);
+            metricas.requestCounter.add(1, { method, route, status: '200' });
             return reply.status(200).send({ data: equipmentLoan });
         } catch (error: any) {
-            request.log.error(error);
 
             if (error.message.includes('El usuario no existe')) {
+                metricas.errorCounter.add(1, { method, route, status: '404' });
                 return reply.status(404).send({ error: error.message });
             }
 
             if (error.message.includes('El préstamo de equipamiento solicitado no existe')) {
+                metricas.errorCounter.add(1, { method, route, status: '404' });
                 return reply.status(404).send({ error: error.message });
             }
 
             if (error.message.includes('Fecha prestamo no puede ser posterior a Fecha Devolucion')) {
+                metricas.errorCounter.add(1, { method, route, status: '400' });
                 return reply.status(400).send({ error: error.message });
             }
 
             if (error.message.includes('Solo se permite realizar prestamos a miembros con categoria Senior o Lifetime')) {
+                metricas.errorCounter.add(1, { method, route, status: '400' });
                 return reply.status(400).send({ error: error.message });
             }
 
+            metricas.errorCounter.add(1, { method, route, status: '500' });
             return reply.status(500).send({ error: "Error al procesar la operacion, intente mas tarde" });
+        } finally {
+            metricas.requestDuration.record(Date.now() - start, { method, route })
         }
     }
 
     async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
-       try {
-           const { id } = request.params;
-           await this.deleteEquipmentLoanUseCase.execute(id);
-           return reply.status(204).send();
+        const start = Date.now();
+        const method = request.method;
+        const route = request.url.split('?')[0];
+        try {
+            const { id } = request.params;
+            await this.deleteEquipmentLoanUseCase.execute(id);
+            metricas.requestCounter.add(1, { method, route, status: '204' });
+            return reply.status(204).send();
+        } catch (error: any) {
+            if (error.message.includes('El préstamo de equipamiento solicitado no existe')) {
+                metricas.errorCounter.add(1, { method, route, status: '400' });
+                return reply.status(400).send({ error: error.message });
+                //deberia ser 404 pero dejo el 400 por la consistencia con el TDD
+            }
 
-
-       } catch (error: any) {
-          
-           if (error.message.includes('El préstamo de equipamiento solicitado no existe')) {
-               return reply.status(400).send({ error: error.message });
-               //deberia ser 404 pero dejo el 400 por la consistencia con el TDD
-           }
-
-
-           return reply.status(500).send({ error: "Error al procesar la operacion, reintente mas tarde" });
-       }
-   }
+            metricas.errorCounter.add(1, { method, route, status: '500' });
+            return reply.status(500).send({ error: "Error al procesar la operacion, reintente mas tarde" });
+        } finally {
+            metricas.requestDuration.record(Date.now() - start, { method, route })
+        }
+    }
 }

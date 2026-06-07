@@ -1,3 +1,6 @@
+import './infrastructure/Telemetry.ts';
+import { createObservables } from './infrastructure/Telemetry.ts';
+
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { PostgresMemberRepository } from './infrastructure/PostgresMemberRepository.js';
@@ -77,6 +80,17 @@ export function buildApp() {
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true,
     });
+
+    const activeRequests = {
+        value: 0,
+    };
+    const concurrentRequests = createObservables(activeRequests);
+    server.addHook('onRequest', async () => {
+        activeRequests.value++;
+    })
+    server.addHook('onResponse', async () => {
+        activeRequests.value--;
+    })
 
     // MEMBER
     const memberRepo = new PostgresMemberRepository();
