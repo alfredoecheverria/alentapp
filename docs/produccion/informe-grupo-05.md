@@ -4,7 +4,7 @@
 | --- | --- | --- | --- |
 | Tamaño imagen API | `api:dev` → Disk usage: 1.5GB | `api:prod` → Disk usage: 644MB | Se redujo el tamaño de Disk usage en aproximadamente un 58% |
 | Tamaño imagen web | `web:dev` → Disk usage: 841MB | `api:prod` → Disk usage: 73.5MB | Se redujo el tamaño de Disk usage en aproximadamente un 90% |
-| Tiempo de startup API |  | | |
+| Tiempo de startup API | 129 segundos  | 34 segundos | Hubo una mejora del 74% |
 | Memoria API (idle) | `api:dev` → Mem Usage: 199.5MiB | `api:prod` → Mem Usage: 54.83 MiB | Hubo una mejora del 72% en el uso de la memoria |
 | Endpoints accesibles | `curl` `:3000/api/v1/socios, :3000/api/v1/payments, :3000/api/v1/equipment-loans, :3000/api/v1/sports, :3000/api/v1/enrollments, :3000/api/v1/lockers, :3000/api/v1/disciplines` | :`3000/api/v1/socios, :3000/api/v1/payments, :3000/api/v1/equipment-loans, :3000/api/v1/sports, :3000/api/v1/enrollments, :3000/api/v1/lockers, :3000/api/v1/disciplines, :9464/metricas, :3001` (grafana), `:3000/health` | La API se mantiene accesible en ambos entornos |
 | Frentend via nginx | No aplica en desarrollo. El frontend no se servía mediante nginx | ` curl localhost/` | El frontend queda correctamente servido por nginx en producción |
@@ -42,11 +42,24 @@ Métricas de Nginx
 # 4.3 Verificación de Observabilidad
 
 ### OpenTelemetry exporta métricas en :9464/metrics
+
+![](screenshots\metricas-curl-9464.png)
+
 ### Prometheus scrapea correctamente el endpoint OTLP
+
+![](screenshots\prometheus.png)
+
 ### Grafana tiene al menos un datasource Prometheus configurado
-### El dashboard RED tiene 6 paneles funcionales
-### Los gráficos responden al tráfico generado
+
+![](screenshots\datasource-opentelemetry.png)
+
+### El dashboard RED tiene 6 paneles funcionales y Los gráficos responden al tráfico generado
+
+![](screenshots\dashboards-grafana.png)
+
 ### Las métricas de error reflejan los 4xx/5xx
+
+![](screenshots\tasa-de-error.png)
 
 # 4.4 Documentación de decisiones
 
@@ -127,3 +140,6 @@ Para soportar la arquitectura del sistema, el diseño de la infraestructura y el
 
 ### Capturas de pantalla: del dashboard RED funcionando con datos
 
+![](screenshots\metricas-1.png)
+![](screenshots\metricas-2.png)
+![](screenshots\metricas-3.png)

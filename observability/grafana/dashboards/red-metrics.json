@@ -23,7 +23,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "(sum(rate(http_requests_errors_total[1m])) / sum(rate(http_requests_total[1m]))) * 100"
+          "expr": "(sum(rate(http_requests_errors_total[10m])) / sum(rate(http_requests_total[10m])))"
         }
       ]
     },
