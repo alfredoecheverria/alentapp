@@ -1,9 +1,14 @@
 {
+  "__inputs": [],
+  "__requires": [],
   "title": "RED - Alentapp API",
+  "version": 2,
+  "schemaVersion": 40,
   "panels": [
     {
       "id": 1,
       "title": "Requests por segundo",
+      "datasource": { "type": "prometheus", "uid": "prometheus-src" },
       "type": "timeseries",
       "targets": [
         {
@@ -14,6 +19,7 @@
     {
       "id": 2,
       "title": "Tasa de error %",
+      "datasource": { "type": "prometheus", "uid": "prometheus-src" },
       "type": "timeseries",
       "targets": [
         {
@@ -24,14 +30,15 @@
     {
       "id": 3,
       "title": "Latencia p95 / p99",
+      "datasource": { "type": "prometheus", "uid": "prometheus-src" },
       "type": "timeseries",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_requests_duration_bucket[5m])) by (le))",
           "legendFormat": "p95"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(http_requests_duration_bucket[5m])) by (le))",
           "legendFormat": "p99"
         }
       ]
@@ -39,6 +46,7 @@
     {
       "id": 4,
       "title": "Distribución por status code",
+      "datasource": { "type": "prometheus", "uid": "prometheus-src" },
       "type": "timeseries",
       "targets": [
         {
@@ -49,20 +57,22 @@
     {
       "id": 5,
       "title": "Memoria del proceso",
-      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus-src" },
+      "type": "gauge",
       "targets": [
         {
-          "expr": "process_memory_usage_bytes"
+          "expr": "process_memory_usage"
         }
       ]
     },
     {
       "id": 6,
       "title": "Top 5 endpoints más lentos",
+      "datasource": { "type": "prometheus", "uid": "prometheus-src" },
       "type": "barchart",
       "targets": [
         {
-          "expr": "topk(5, avg by(route)(http_request_duration_ms))"
+          "expr": "topk(5, avg (http_requests_duration_bucket) by (route))"
         }
       ]
     }
