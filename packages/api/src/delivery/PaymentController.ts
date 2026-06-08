@@ -19,14 +19,14 @@ export class PaymentController {
     ) {}
 
     async create(
-        request: FastifyRequest<{ Body: CreatePaymentRequest }>,
+        _request: FastifyRequest<{ Body: CreatePaymentRequest }>,
         reply: FastifyReply,
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const pago = await this.createPaymentUseCase.execute(request.body);
+            const pago = await this.createPaymentUseCase.execute(_request.body);
             metricas.requestCounter.add(1, { method, route, status: '201' });
             return reply.status(201).send({ data: pago });
         } catch (error: any) {
@@ -42,15 +42,15 @@ export class PaymentController {
     }
 
     async update(
-        request: FastifyRequest<{ Params: {id: string}; Body: UpdatePaymentRequest }>,
+        _request: FastifyRequest<{ Params: {id: string}; Body: UpdatePaymentRequest }>,
         reply: FastifyReply,
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const { id } = request.params;
-            const pago = await this.updatePaymentUseCase.execute(id, request.body);
+            const { id } = _request.params;
+            const pago = await this.updatePaymentUseCase.execute(id, _request.body);
             metricas.requestCounter.add(1, { method, route, status: '200' });
             return reply.status(200).send({ data: pago });
         } catch (error: any) {
@@ -78,14 +78,14 @@ export class PaymentController {
     }
 
     async deletePayment(
-        request: FastifyRequest<{ Params: { id: string } }>,
+        _request: FastifyRequest<{ Params: { id: string } }>,
         reply: FastifyReply,
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const { id } = request.params;
+            const { id } = _request.params;
             await this.deletePaymentUseCase.execute(id);
             metricas.requestCounter.add(1, { method, route, status: '204' });
             return reply.status(204).send();
@@ -103,8 +103,8 @@ export class PaymentController {
 
     async getAll(_request: FastifyRequest, reply: FastifyReply) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
             const pagos = await this.getPaymentUseCase.execute();
             metricas.requestCounter.add(1, { method, route, status: '200' });

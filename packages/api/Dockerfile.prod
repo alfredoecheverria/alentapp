@@ -11,15 +11,15 @@ RUN npm ci --omit=dev \
     && rm -rf \
       node_modules/.bin \
       /root/.npm \
-      node_modules/@prisma/client \
-      node_modules/@prisma/config \
-      node_modules/@prisma/dev \
-      node_modules/@prisma/engines \
-      node_modules/@prisma/fetch-engine \
-      node_modules/@prisma/get-platform \
-      node_modules/@prisma/query-plan-executor \
-      node_modules/@prisma/studio-core \
-      node_modules/prisma \
+#      node_modules/@prisma/client \
+#      node_modules/@prisma/config \
+#      node_modules/@prisma/dev \
+#      node_modules/@prisma/engines \
+#      node_modules/@prisma/fetch-engine \
+#      node_modules/@prisma/get-platform \
+#      node_modules/@prisma/query-plan-executor \
+#      node_modules/@prisma/studio-core \
+#      node_modules/prisma \
       node_modules/react \
       node_modules/react-dom \
     && find node_modules -type d \( -name "test" -o -name "tests" -o -name "__tests__" \) -exec rm -rf {} + 2>/dev/null
@@ -34,7 +34,7 @@ COPY packages/shared/package.json ./packages/shared/
 RUN npm ci
 
 COPY . ./
-RUN npm run build -w packages/shared && npm run build -w packages/api
+RUN npx prisma generate --config packages/api/prisma.config.ts && npm run build -w packages/shared && npm run build -w packages/api
 
 # Stage 3: runtime / imagen final
 FROM node:22-alpine AS runtime
@@ -43,16 +43,16 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/packages/api/src/generated ./dist/generated
 COPY --from=build --chown=node:node /app/packages/shared/dist ./packages/shared/dist
 COPY --from=build --chown=node:node /app/packages/shared/package.json ./packages/shared/package.json
 COPY --from=build --chown=node:node /app/packages/api/dist ./dist
 COPY --from=build --chown=node:node /app/packages/api/package.json ./package.json
 COPY --from=build --chown=node:node /app/packages/api/prisma ./prisma
 
-RUN rm -rf \
-    /usr/local/bin/npx \
-    /usr/local/bin/npm \
-    /usr/local/lib/node_modules/npm
+COPY --from=build --chown=node:node /app/node_modules/prisma ./node_modules/prisma
+COPY --from=build --chown=node:node /app/node_modules/@prisma/client ./node_modules/@prisma/client
+
 
 
 # Correr como usuario no-root
@@ -63,6 +63,6 @@ EXPOSE 9464
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD ["node","-e","const http=require('http'); http.get('http://127.0.0.1:3000',(res) => {process.exit(res.statusCode===200 ? 0: 1)}).on('error',()=>process.exit(1))"]
+  CMD node -e "const http=require('http'); http.get('http://127.0.0.1:3000',(res) => {process.exit(res.statusCode===200 ? 0: 1)}).on('error',()=>process.exit(1))"
 
 CMD ["npm","run","start"]

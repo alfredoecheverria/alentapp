@@ -1,7 +1,6 @@
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { MeterProvider, Meter } from '@opentelemetry/sdk-metrics';
 import { metrics } from '@opentelemetry/api';
 
 const prometheusExporter = new PrometheusExporter({
@@ -14,7 +13,7 @@ const sdk = new NodeSDK({
     instrumentations: [
         getNodeAutoInstrumentations({
             '@opentelemetry/instrumentation-http': {},
-            '@opentelemetry/instrumentation-fastify': {},
+ //           '@opentelemetry/instrumentation-fastify': {},
         }),
     ],
 });

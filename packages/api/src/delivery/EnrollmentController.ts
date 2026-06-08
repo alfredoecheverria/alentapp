@@ -19,14 +19,14 @@ export class EnrollmentController {
     ) {}
 
     async create(
-        request: FastifyRequest<{ Body: CreateEnrollmentRequest }>,
+        _request: FastifyRequest<{ Body: CreateEnrollmentRequest }>,
         reply: FastifyReply
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const enrollment = await this.createEnrollmentUseCase.execute(request.body);
+            const enrollment = await this.createEnrollmentUseCase.execute(_request.body);
             metricas.requestCounter.add(1, { method, route, status: '201' });
             return reply.status(201).send({ data: enrollment });
         } catch (error: any) {
@@ -43,12 +43,12 @@ export class EnrollmentController {
     }
 
     async getAll(
-        request: FastifyRequest,
+        _request: FastifyRequest,
         reply: FastifyReply
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try{
             const enrollments = await this.getEnrollmentsUseCase.execute();
             metricas.requestCounter.add(1, { method, route, status: '200' });
@@ -62,15 +62,15 @@ export class EnrollmentController {
     }
 
     async update(
-        request: FastifyRequest<{Params: { id: string }, Body: UpdateEnrollmentRequest}>,
+        _request: FastifyRequest<{Params: { id: string }, Body: UpdateEnrollmentRequest}>,
         reply: FastifyReply
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const { id } = request.params;
-            const enrollment = await this.updateEnrollmentUseCase.execute(id, request.body);
+            const { id } = _request.params;
+            const enrollment = await this.updateEnrollmentUseCase.execute(id, _request.body);
             metricas.requestCounter.add(1, { method, route, status: '200' });
             return reply.status(200).send({ data: enrollment });
         } catch (error: any) {
@@ -95,14 +95,14 @@ export class EnrollmentController {
     }
 
     async delete(
-        request: FastifyRequest<{Params: { id: string}}>,
+        _request: FastifyRequest<{Params: { id: string}}>,
         reply: FastifyReply
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const { id } = request.params;
+            const { id } = _request.params;
             await this.deleteEnrollmentUseCase.execute(id);
             metricas.requestCounter.add(1, { method, route, status: '204' });
             return reply.status(204).send();

@@ -20,8 +20,8 @@ export class DisciplineController {
 
     async getAll(_request: FastifyRequest, reply: FastifyReply) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
             const disciplinas = await this.getDisciplinesUseCase.execute();
             metricas.requestCounter.add(1, { method, route, status: '200' });
@@ -35,14 +35,14 @@ export class DisciplineController {
     }
 
     async create(
-        request: FastifyRequest<{ Body: CreateDisciplineRequest }>,
+        _request: FastifyRequest<{ Body: CreateDisciplineRequest }>,
         reply: FastifyReply,
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const body = request.body as CreateDisciplineRequest;
+            const body = _request.body as CreateDisciplineRequest;
             const result = await this.createDisciplineUseCase.execute(body);
 
             metricas.requestCounter.add(1, { method, route, status: '201' });
@@ -77,15 +77,15 @@ export class DisciplineController {
     }
 
     async update(
-        req: FastifyRequest<{ Params: { id: string }; Body: UpdateDisciplineRequest }>,
+        _request: FastifyRequest<{ Params: { id: string }; Body: UpdateDisciplineRequest }>,
         reply: FastifyReply,
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const { id } = req.params as { id: string };
-            const data = req.body as UpdateDisciplineRequest;
+            const { id } = _request.params as { id: string };
+            const data = _request.body as UpdateDisciplineRequest;
 
             const result = await this.updateDisciplineUseCase.execute(id, data);
 
@@ -122,14 +122,14 @@ export class DisciplineController {
     }
 
     async deactivate(
-        req: FastifyRequest<{ Params: { id: string } }> ,
+        _request: FastifyRequest<{ Params: { id: string } }> ,
         reply: FastifyReply,
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const { id } = req.params;
+            const { id } = _request.params;
             const result = await this.deactivateDisciplineUseCase.execute(id);
 
             metricas.requestCounter.add(1, { method, route, status: '200' });
