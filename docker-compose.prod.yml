@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   db:
     image: postgres:16-alpine
@@ -41,6 +39,7 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
+      - "9464:9464"
     logging:
       driver: json-file
       options:
@@ -68,7 +67,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
-      start_period: 20s      
+      start_period: 20s
     networks:
       - internal
 
@@ -138,6 +137,9 @@ services:
 
       volumes:
         - grafana_data:/var/lib/grafana
+        - ./observability/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+        - ./observability/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+        - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards/dashboards:ro
 
       ports:
         - "3001:3000"
@@ -146,7 +148,7 @@ services:
         - internal
 
       depends_on:
-        - prometheus     
+        - prometheus
 
 
 volumes:
