@@ -22,8 +22,8 @@ export class EquipmentLoanController {
 
     async getAll(_request: FastifyRequest, reply: FastifyReply) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
             const equipmentLoans = await this.getEquipmentLoansUseCase.execute();
             metricas.requestCounter.add(1, { method, route, status: '200' });
@@ -37,14 +37,14 @@ export class EquipmentLoanController {
     }
 
     async create(
-        request: FastifyRequest<{ Body: CreateEquipmentLoanRequest }>,
+        _request: FastifyRequest<{ Body: CreateEquipmentLoanRequest }>,
         reply: FastifyReply
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const equipmentLoan = await this.createEquipmentLoanUseCase.execute(request.body);
+            const equipmentLoan = await this.createEquipmentLoanUseCase.execute(_request.body);
             metricas.requestCounter.add(1, { method, route, status: '201' });
             return reply.status(201).send({ data: equipmentLoan });
 
@@ -72,14 +72,14 @@ export class EquipmentLoanController {
     }
 
     async update(
-        request: FastifyRequest<{ Params: { id: string }; Body: UpdateEquipmentLoanRequest }>,
+        _request: FastifyRequest<{ Params: { id: string }; Body: UpdateEquipmentLoanRequest }>,
         reply: FastifyReply
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const equipmentLoan = await this.updateEquipmentLoanUseCase.execute(request.params.id, request.body);
+            const equipmentLoan = await this.updateEquipmentLoanUseCase.execute(_request.params.id, _request.body);
             metricas.requestCounter.add(1, { method, route, status: '200' });
             return reply.status(200).send({ data: equipmentLoan });
         } catch (error: any) {
@@ -111,12 +111,12 @@ export class EquipmentLoanController {
         }
     }
 
-    async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    async delete(_request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const { id } = request.params;
+            const { id } = _request.params;
             await this.deleteEquipmentLoanUseCase.execute(id);
             metricas.requestCounter.add(1, { method, route, status: '204' });
             return reply.status(204).send();

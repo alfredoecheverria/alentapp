@@ -21,14 +21,14 @@ export class LockerController {
     }
 
     async create(
-        request: FastifyRequest<{ Body: CreateLockerRequest }>,
+        _request: FastifyRequest<{ Body: CreateLockerRequest }>,
         reply: FastifyReply,
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const locker = await this.createLockerUseCase.execute(request.body);
+            const locker = await this.createLockerUseCase.execute(_request.body);
             metricas.requestCounter.add(1, { method, route, status: '201' });
             return reply.status(201).send({ data: locker });
         } catch (error: any) {
@@ -73,8 +73,8 @@ export class LockerController {
 
     async getAll(_request: FastifyRequest, reply: FastifyReply) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
             const socios = await this.getLockersUseCase.execute();
             metricas.requestCounter.add(1, { method, route, status: '200' });
@@ -88,15 +88,15 @@ export class LockerController {
     }
 
     async update(
-        request: FastifyRequest<{ Params: { id: string }, Body: UpdateLockerRequest }>,
+        _request: FastifyRequest<{ Params: { id: string }, Body: UpdateLockerRequest }>,
         reply: FastifyReply,
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const { id } = request.params;
-            const locker = await this.updateLockerUseCase.execute(id, request.body);
+            const { id } = _request.params;
+            const locker = await this.updateLockerUseCase.execute(id, _request.body);
             metricas.requestCounter.add(1, { method, route, status: '200' });
             return reply.status(200).send({ data: locker });
         } catch (error: any) {
@@ -140,14 +140,14 @@ export class LockerController {
     }
 
      async delete(
-        request: FastifyRequest<{ Params: { id: string } }>,
+        _request: FastifyRequest<{ Params: { id: string } }>,
         reply: FastifyReply,
     ) {
         const start = Date.now();
-        const method = request.method;
-        const route = request.url.split('?')[0];
+        const method = _request.method;
+        const route = _request.url.split('?')[0];
         try {
-            const { id } = request.params;
+            const { id } = _request.params;
             await this.deleteLockerUseCase.execute(id);
             metricas.requestCounter.add(1, { method, route, status: '204' });
             return reply.status(204).send(); // No Content
