@@ -1,0 +1,70 @@
+{
+  "title": "RED - Alentapp API",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Requests por segundo",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[1m]))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Tasa de error %",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "(sum(rate(http_requests_errors_total[1m])) / sum(rate(http_requests_total[1m]))) * 100"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Latencia p95 / p99",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_bucket[5m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Distribución por status code",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[1m])) by (status_code)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Memoria del proceso",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "process_memory_usage_bytes"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Top 5 endpoints más lentos",
+      "type": "barchart",
+      "targets": [
+        {
+          "expr": "topk(5, avg by(route)(http_request_duration_ms))"
+        }
+      ]
+    }
+  ]
+}
