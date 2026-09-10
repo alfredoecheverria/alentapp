@@ -8,10 +8,10 @@ scrape_configs:
         labels:
           app: 'alentapp-api'
           service: 'api'
-  
+
   - job_name: 'opentelemetry'
     static_configs:
-      - targets: ['host.docker.internal:9464']
+      - targets: ['host.docker.internal:3000']
         labels:
           app: 'alentapp'
           service: 'api-otel'
