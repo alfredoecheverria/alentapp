@@ -5,12 +5,5 @@ datasources:
       type: prometheus
       uid: prometheus-src
       access: proxy
-      url: http://prometheus:9090
-      jsonData:
-        graphiteVersion: "1.1"
-        tlsAuth: false
-        tlsAuthWithCACert: false
-      secureJsonData:
-        tlsCACert: "..."
-        tlsClientCert: "..."
-        tlsClientKey: "..."
+      url: $PROMETHEUS_URL
+      isDefault: true
