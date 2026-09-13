@@ -1,6 +1,6 @@
 import type { PaymentDTO, CreatePaymentRequest } from '@alentapp/shared';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api/v1';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api') + '/v1';
 
 export const paymentsService = {
 
@@ -11,8 +11,8 @@ export const paymentsService = {
         }
         const result = await response.json();
         return result.data;
-    }, 
-    
+    },
+
     async create(data: CreatePaymentRequest): Promise<PaymentDTO> {
         const response = await fetch(`${API_URL}/payments`, {
         method: 'POST',
@@ -47,7 +47,7 @@ export const paymentsService = {
 
     async delete(id: string): Promise<void> {
         const response = await fetch(`${API_URL}/payments/${id}`, {
-            method: 'DELETE', 
+            method: 'DELETE',
         });
 
         if (!response.ok) {

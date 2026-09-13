@@ -9,7 +9,11 @@ test/e2e/reports
 test-results
 playwright-report-fullstack
 selenium-debug.log
-
+*.tfvars
+*.tfstate
+*.tfstate*
+.terraform/
+.env*
 
 # test
 test/test-report.json

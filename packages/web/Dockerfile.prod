@@ -26,6 +26,8 @@ COPY packages/shared/ ./packages/shared/
 
 # Ejecutar el build de Vite desde el workspace web
 WORKDIR /app/packages/web
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Stage 3: runtime — Servidor nginx

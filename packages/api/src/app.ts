@@ -1,5 +1,5 @@
 import './infrastructure/Telemetry.ts';
-import { createObservables } from './infrastructure/Telemetry.ts';
+import { prometheusExporter, createObservables } from './infrastructure/Telemetry.ts';
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
@@ -90,6 +90,11 @@ export function buildApp() {
     })
     server.addHook('onResponse', async () => {
         activeRequests.value--;
+    })
+
+    server.get('/metrics', (req, res) => {
+        res.hijack();
+        prometheusExporter.getMetricsRequestHandler(req.raw, res.raw);
     })
 
     // MEMBER

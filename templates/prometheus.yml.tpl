@@ -4,14 +4,14 @@ global:
 scrape_configs:
   - job_name: 'alentapp-api'
     static_configs:
-      - targets: ['host.docker.internal:3000']
+      - targets: ['${api_internal_fqdn}']
         labels:
           app: 'alentapp-api'
           service: 'api'
 
   - job_name: 'opentelemetry'
     static_configs:
-      - targets: ['host.docker.internal:3000']
+      - targets: ['${api_internal_fqdn}']
         labels:
           app: 'alentapp'
           service: 'api-otel'
